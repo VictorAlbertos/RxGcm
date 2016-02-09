@@ -36,7 +36,7 @@ Add Google Services to classpath and jitpack repository to root level build.grad
 
 ```gradle
 dependencies {
-    classpath 'com.google.gms:google-services:1.3.0-beta1'
+    classpath 'com.google.gms:google-services:1.5.0-beta2'
 }
 
 repositories {
