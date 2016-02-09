@@ -27,7 +27,7 @@ Add RxGcm dependency and Google Services plugin to project level build.gradle.
 apply plugin: 'com.google.gms.google-services'
 
 dependencies {
-    compile 'com.github.VictorAlbertos:RxGcm:0.1.0'
+    compile 'com.github.VictorAlbertos:RxGcm:0.1.1'
     compile 'io.reactivex:rxjava:1.1.0'
 }
 ```
@@ -36,7 +36,7 @@ Add Google Services to classpath and jitpack repository to root level build.grad
 
 ```gradle
 dependencies {
-    classpath 'com.google.gms:google-services:1.5.0-beta2'
+    classpath 'com.google.gms:google-services:1.5.0'
 }
 
 allprojects {
