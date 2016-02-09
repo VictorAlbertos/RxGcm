@@ -39,9 +39,11 @@ dependencies {
     classpath 'com.google.gms:google-services:1.5.0-beta2'
 }
 
-repositories {
-    //..
-    maven { url "https://jitpack.io" }
+allprojects {
+    repositories {
+        //..
+        maven { url "https://jitpack.io" }
+    }
 }
 
 ```
