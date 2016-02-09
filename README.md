@@ -50,11 +50,11 @@ There is, thought, one step behind which RxGcm can't do for you. You need to cre
 
 Usage
 =====
-RxGcm functionality is access thought RxGcm.Notifications enum, ensuring this way that only one instance of RxGcm will be create.
+RxGcm functionality is access thought [RxGcm.Notifications](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java) enum, ensuring this way that only one instance of RxGcm will be create.
 
 Register
 --------
-To listen for Ggm notifications, you just need to call RxGcm.Notifications.register in your Android Application class, passing as parameter the current Android Application instance.
+To listen for Ggm notifications, you just need to call [RxGcm.Notifications.register](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L78) in your Android Application class, passing as parameter the current Android Application instance.
  
 ```java
 public class RxSampleApp extends Application {
@@ -81,8 +81,8 @@ RxGgm asks to Google for a token. But if the token is already cached, the observ
 
 Background notifications
 ------------------------
-To listen for notifications which has been received when the application was on background, you need to call RxGcm.Notifications.onBackgroundNotification, passing as parameter a class which
-implements GcmBackgroundReceiver listener:
+To listen for notifications which has been received when the application was on background, you need to call [RxGcm.Notifications.onBackgroundNotification](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L136), passing as parameter a class which
+implements [GcmBackgroundReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmBackgroundReceiver.java) interface:
 
 ```java
 public class BackgroundMessageReceiver implements GcmBackgroundReceiver {
@@ -148,7 +148,7 @@ public class RxSampleApp extends Application {
 ```
 
 
-Or you can adopt a more granular approach, implementing GcmForegroundReceiver interface in those Activities/Fragments which you want to subscribe for gcm notifications: 
+Or you can adopt a more granular approach, implementing [GcmForegroundReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmForegroundReceiver.java) interface in those Activities/Fragments which you want to subscribe for gcm notifications: 
 
 ```java
 public class MainActivity extends AppCompatActivity implements GcmForegroundReceiver {
@@ -197,7 +197,7 @@ You can, of course, combine both of them.
 
 Retrieving current token 
 ------------------------
-If at some point you need to retrieve the gcm token device -e.g for updating the value on your server, you could do it easily calling RxGcm.Notifications.currentToken:
+If at some point you need to retrieve the gcm token device -e.g for updating the value on your server, you could do it easily calling [RxGcm.Notifications.currentToken](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L114):
 
 ```java
 RxGcm.Notifications.currentToken().subscribe(new Subscriber<String>() {
@@ -219,7 +219,7 @@ RxGcm.Notifications.currentToken().subscribe(new Subscriber<String>() {
 Subscribing for token updates
 -----------------------------
 As the [documentation](https://developers.google.com/android/reference/com/google/android/gms/iid/InstanceIDListenerService#onTokenRefresh) points out, the token device may need to be refreshed for some particular reason. 
-In order to you be notified, you can call RxGcm.Notifications.onRefreshToken, passing as parameter a class which implements GcmRefreshTokenReceiver interface:
+In order to you be notified, you can call [RxGcm.Notifications.onRefreshToken](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L144), passing as parameter a class which implements [GcmRefreshTokenReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmRefreshTokenReceiver.java) interface:
 
 ```java
 public class RefreshTokenReceiver implements GcmRefreshTokenReceiver {
