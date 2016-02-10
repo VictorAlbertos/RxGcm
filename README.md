@@ -280,8 +280,8 @@ Author
 * <https://linkedin.com/in/victoralbertos>
 * <https://github.com/VictorAlbertos>
 
-Another author libraries using RxJava:
--------------------------------------
+Another author's libraries using RxJava:
+----------------------------------------
 * [RxCache](https://github.com/VictorAlbertos/RxCache): Reactive caching library for Android and Java. 
 
 
