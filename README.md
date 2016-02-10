@@ -271,3 +271,17 @@ Testing notification
 --------------------
 You can easily [send http post request](https://developers.google.com/cloud-messaging/downstream) to Google Cloud Messaging server using Postman or Advanced Rest Client.
 Or you can send directly push notifications using [this page](http://1-dot-sigma-freedom-752.appspot.com/gcmpusher.jsp). 
+
+Author
+-------
+**Víctor Albertos**
+
+* <https://twitter.com/_victorAlbertos>
+* <https://linkedin.com/in/victoralbertos>
+* <https://github.com/VictorAlbertos>
+
+Another author libraries using RxJava:
+-------------------------------------
+* [RxCache](https://github.com/VictorAlbertos/RxCache): Reactive caching library for Android and Java. 
+
+
