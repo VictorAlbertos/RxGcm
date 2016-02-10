@@ -265,7 +265,7 @@ This means you do not need to worry about threading and sync. But if you  need t
 
 Examples
 --------
-There is a complete example of RxGcm in the [app module](). Plus, it has an integration test managed by [Espresso test kit](https://google.github.io/android-testing-support-library/) which show several uses cases.
+There is a complete example of RxGcm in the [app module](https://github.com/VictorAlbertos/RxGcm/tree/master/app). Plus, it has an integration test managed by [Espresso test kit](https://google.github.io/android-testing-support-library/) which show several uses cases.
 
 Testing notification
 --------------------
