@@ -1,3 +1,5 @@
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxGcm-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/3126)
+
 RxGcm
 =====
 Every time I need to add Google cloud message to an Android application, the requirement of a confusing configuration always stops me 
