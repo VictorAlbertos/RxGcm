@@ -2,8 +2,8 @@ language: android
 script: "./gradlew build"
 android:
   components:
-    # The BuildTools version used by your project
+    # The BuildTools version used by your project.
     - build-tools-23.1.1
 
-    # The SDK version used to compile your project
+    # The SDK version used to compile your project.
     - android-23
