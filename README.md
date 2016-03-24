@@ -112,7 +112,7 @@ public class BackgroundMessageReceiver implements GcmBackgroundReceiver {
 }
 ```
 
-And in your Android Application class, call RxGcm.Notifications.onBackgroundNotification passing the GcmRefreshTokenReceiver implementation:
+And in your Android Application class, call RxGcm.Notifications.onBackgroundNotification passing the BackgroundMessageReceiver implementation:
 
 ```java
 public class RxSampleApp extends Application {
