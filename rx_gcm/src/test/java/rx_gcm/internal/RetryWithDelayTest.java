@@ -35,8 +35,7 @@ public class RetryWithDelayTest {
                 subscriber.onError(new RuntimeException(""));
             }
         }).doOnError(new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
+            @Override public void call(Throwable throwable) {
                 errorTimes++;
             }
         }).retryWhen(new RetryWithDelay(3, 50)).subscribe(new Subscriber<String>() {

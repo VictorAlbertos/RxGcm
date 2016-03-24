@@ -23,7 +23,8 @@ import com.google.android.gms.gcm.GcmListenerService;
 
 public class AppGcmListenerService extends GcmListenerService {
 
-    @Override public void onMessageReceived(String from, Bundle data) {
+    @Override public void onMessageReceived(final String from, final Bundle data) {
+        RxGcm.Notifications.init(getApplication());
         RxGcm.Notifications.onNotificationReceived(from, data);
     }
 

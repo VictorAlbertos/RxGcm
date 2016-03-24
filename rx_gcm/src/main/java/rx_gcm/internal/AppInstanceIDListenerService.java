@@ -19,8 +19,11 @@ package rx_gcm.internal;
 import com.google.android.gms.iid.InstanceIDListenerService;
 
 public class AppInstanceIDListenerService extends InstanceIDListenerService {
+
     @Override public void onTokenRefresh() {
+        RxGcm.Notifications.init(getApplication());
         RxGcm.Notifications.onTokenRefreshed();
     }
+
 }
 

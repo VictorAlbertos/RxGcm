@@ -62,12 +62,13 @@ public enum RxGcm {
         this.mainThreadScheduler = Schedulers.io();
     }
 
-    private void init() {
-        if (testing) return;
+    void init(Application application) {
+        if (testing || activitiesLifecycle != null) return;
         getGcmServerToken = new GetGcmServerToken();
         persistence = new Persistence();
         getGcmForegroundReceivers = new GetGcmForegroundReceivers();
         mainThreadScheduler = AndroidSchedulers.mainThread();
+        activitiesLifecycle = new ActivitiesLifecycleCallbacks(application);
     }
 
     /**
@@ -76,9 +77,7 @@ public enum RxGcm {
      * @param application The Android Application class
      */
     public Observable<String> register(final Application application) {
-        init();
-
-        activitiesLifecycle = new ActivitiesLifecycleCallbacks(application);
+        init(application);
 
         Observable.OnSubscribe<String> onSubscribe = new Observable.OnSubscribe<String>() {
             @Override public void call(Subscriber<? super String> subscriber) {
