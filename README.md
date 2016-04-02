@@ -47,7 +47,7 @@ There is, thought, one step behind which RxGcm can't do for you. You need to cre
 public class AppGcmReceiverData implements GcmReceiverData {    
  
  	@Override public Observable<Message> onNotification(Observable<Message> oMessage) {         
- 		return oMessage.doOnNext(message -> { });     
+ 		return oMessage.doOnNext(message -> {});     
  	} 
  	
  }
@@ -78,11 +78,11 @@ To RxGcm be able to return a not null `string` value when calling `target()` met
 ```json            
 { 
   "data": {
-    "title": "A title 4",
-    "body": "A body 4",
-    "rx_gcm_key_target”:”supplies”
+    "title":"A title 4",
+    "body":"A body 4",
+    "rx_gcm_key_target":"supplies"
   },
-  "to" :”token_device”
+  "to":"token_device"
   }
 }
 ```
