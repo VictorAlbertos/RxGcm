@@ -249,10 +249,6 @@ public class RxGcmTest {
         assert onNotificationStartTimeStamp > onNotificationFinishTimeStamp;
     }
 
-    @Test public void Keys() {
-        //Test keys esto va en otro test
-    }
-
     @Test(expected=IllegalStateException.class) public void When_Call_Class_With_No_Public_Empty_Constructor_Get_Exception() {
         RxGcm.Notifications.getInstanceClassByName(ClassWithNoPublicEmptyConstructor.class.getName());
     }
