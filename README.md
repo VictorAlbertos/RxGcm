@@ -47,7 +47,7 @@ There is, thought, one step behind which RxGcm can't do for you. You need to cre
 public class AppGcmReceiverData implements GcmReceiverData {    
  
  	@Override public Observable<Message> onNotification(Observable<Message> oMessage) {         
- 		return oMessage.doOnNext(message -> { });     
+ 		return oMessage.doOnNext(message -> {});     
  	} 
  	
  }
@@ -78,11 +78,11 @@ To RxGcm be able to return a not null `string` value when calling `target()` met
 ```json            
 { 
   "data": {
-    "title": "A title 4",
-    "body": "A body 4",
-    "rx_gcm_key_target”:”supplies”
+    "title":"A title 4",
+    "body":"A body 4",
+    "rx_gcm_key_target":"supplies"
   },
-  "to" :”token_device”
+  "to":"token_device"
   }
 }
 ```
@@ -106,9 +106,9 @@ public class AppGcmReceiverUIBackground implements GcmReceiverUIBackground { �
 ```
 
 #### GcmReceiverUIForeground
-`GcmReceiverUIForeground` implementation will be called when a notification is received and the application is in the foreground. The implementation class must be an `Activity` or an `android.support.v4.app.Fragment`. `GcmReceiverUIForeground` exposes the `target()` method, which forces to the implementation class to return a string. 
+`GcmReceiverUIForeground` implementation will be called when a notification is received and the application is in the foreground. The implementation class must be an `Activity` or an `android.support.v4.app.Fragment`. `GcmReceiverUIForeground` exposes a method called `target()`, which forces to the implementation class to return a string. 
 
-RxGcm internally compares this string to the value of the rx_gcm_key_target node payload notification. If the current `Activity` or visible `Fragment` `target()` value matches with the one of rx_gcm_key_target node, the `isTarget()` method of the [ForegroundMessage](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/ForegroundMessage.java) class will return true, otherwise it will return false. 
+RxGcm internally compares this string to the value of the rx_gcm_key_target node payload notification. If the current `Activity` or visible `Fragment` `target()` method value matches with the one of rx_gcm_key_target node, the `isTarget()` method of the [ForegroundMessage](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/ForegroundMessage.java) class will return true, otherwise it will return false. 
 
 ```java
 public class ActivityIssue extends Activity implements GcmReceiverUIForeground {      
@@ -144,10 +144,10 @@ public class FragmentSupply extends android.support.v4.app.Fragment implements G
 }
 ```
 
-**Limitation:**: Your fragments need to extend from android.support.v4.app.Fragment` instead of `android.app.Fragment`, otherwise they won't be notified. 
+**Limitation:**: Your fragments need to extend from `android.support.v4.app.Fragment` instead of `android.app.Fragment`, otherwise they won't be notified. 
 
-### RefreshTokenReceiver for subscribing on token updates
-[GcmRefreshTokenReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmRefreshTokenReceiver.java) implementation will be called when the token has been modified. As the [documentation](https://developers.google.com/android/reference/com/google/android/gms/iid/InstanceIDListenerService#onTokenRefresh) points out, the token device may need to be refreshed for some particular reason. 
+### RefreshTokenReceiver
+[GcmRefreshTokenReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmRefreshTokenReceiver.java) implementation will be called when the token has been updated. As the [documentation](https://developers.google.com/android/reference/com/google/android/gms/iid/InstanceIDListenerService#onTokenRefresh) points out, the token device may need to be refreshed for some particular reason. 
 
 ```java
 public class RefreshTokenReceiver implements GcmRefreshTokenReceiver {
@@ -168,8 +168,7 @@ If at some point you need to retrieve the gcm token device -e.g for updating the
 
 
 ### Register RxGcm classes
-Once you have implemented GcmReceiverData and GcmReceiverUIBackground interfaces is time to register them in your Android `Application` class calling [RxGcm.Notifications.register](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L79).
-Plus, register `RefreshTokenReceiver implementation` too at this point. 
+Once you have implemented `GcmReceiverData` and `GcmReceiverUIBackground` interfaces is time to register them in your Android `Application` class calling [RxGcm.Notifications.register](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L79). Plus, register `RefreshTokenReceiver` implementation too at this point. 
    
 ```java
 public class RxSampleApp extends Application {
