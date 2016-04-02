@@ -22,24 +22,35 @@ import java.util.List;
 import rx.Observable;
 import rx.functions.Action1;
 import rx_gcm.ForegroundMessage;
-import rx_gcm.GcmForegroundReceiver;
+import rx_gcm.GcmReceiverUIForeground;
 
-public class GcmForegroundReceiverMock implements GcmForegroundReceiver {
-    private final List<ForegroundMessage> foregroundMessages;
+public class GcmReceiverMockUIForeground implements GcmReceiverUIForeground {
+    private final List<ForegroundMessage> messages;
+    private long onNotificationStartTimeStamp;
 
-    public GcmForegroundReceiverMock() {
-        this.foregroundMessages = new ArrayList<>();
+    public GcmReceiverMockUIForeground() {
+        this.messages = new ArrayList<>();
     }
 
-    @Override public void onReceiveMessage(Observable<ForegroundMessage> oMessage) {
-        oMessage.subscribe(new Action1<ForegroundMessage>() {
+    @Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {
+        onNotificationStartTimeStamp = System.currentTimeMillis();
+
+        oForegroundMessage.subscribe(new Action1<ForegroundMessage>() {
             @Override public void call(ForegroundMessage foregroundMessage) {
-                foregroundMessages.add(foregroundMessage);
+                messages.add(foregroundMessage);
             }
         });
     }
 
-    public List<ForegroundMessage> getForegroundMessages() {
-        return foregroundMessages;
+    @Override public String target() {
+        return "GcmReceiverMockUI";
+    }
+
+    public List<ForegroundMessage> getMessages() {
+        return messages;
+    }
+
+    public long getOnNotificationStartTimeStamp() {
+        return onNotificationStartTimeStamp;
     }
 }

@@ -20,22 +20,18 @@ package rx_gcm.internal;
 import android.content.Context;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 
-import rx_gcm.internal.Constants;
 import victoralbertos.io.rx_gcm.R;
 
 class GetGcmServerToken {
 
     String retrieve(Context context) throws Exception {
+        int status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
 
-        int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
-
-        if(status != ConnectionResult.SUCCESS) {
-            throw new RuntimeException(Constants.GOOGLE_PLAY_SERVICES_ERROR);
-        }
+        if(status != ConnectionResult.SUCCESS) throw new RuntimeException(Constants.GOOGLE_PLAY_SERVICES_ERROR);
 
         InstanceID instanceID = InstanceID.getInstance(context);
         return instanceID.getToken(context.getString(R.string.gcm_defaultSenderId),

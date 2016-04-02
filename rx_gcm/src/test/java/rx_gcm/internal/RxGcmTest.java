@@ -24,13 +24,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import rx.observers.TestSubscriber;
-import rx_gcm.BackgroundMessage;
 import rx_gcm.ForegroundMessage;
-import rx_gcm.GcmForegroundReceiver;
+import rx_gcm.Message;
 import rx_gcm.TokenUpdate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +43,7 @@ public class RxGcmTest {
     @Mock protected GetGcmServerToken getGcmServerTokenMock;
     @Mock protected Persistence persistenceMock;
     @Mock protected ActivitiesLifecycleCallbacks activitiesLifecycle;
-    @Mock protected GetGcmForegroundReceivers getGcmForegroundReceivers;
+    @Mock protected GetGcmReceiversUIForeground getGcmForegroundReceivers;
 
     private final static String MOCK_TOKEN = "mock_token";
 
@@ -60,7 +58,9 @@ public class RxGcmTest {
         when(persistenceMock.getToken(applicationMock)).thenReturn(null);
 
         TestSubscriber<String> subscriberMock = new TestSubscriber<>();
-        RxGcm.Notifications.register(applicationMock).subscribe(subscriberMock);
+        RxGcm.Notifications
+                .register(applicationMock, GcmReceiverDataMock.class, GcmReceiverMockUIBackground.class)
+                .subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
 
         subscriberMock.assertValue(MOCK_TOKEN);
@@ -74,7 +74,9 @@ public class RxGcmTest {
         when(persistenceMock.getToken(applicationMock)).thenReturn(null);
 
         TestSubscriber<String> subscriberMock = new TestSubscriber<>();
-        RxGcm.Notifications.register(applicationMock).subscribe(subscriberMock);
+        RxGcm.Notifications
+                .register(applicationMock, GcmReceiverDataMock.class, GcmReceiverMockUIBackground.class)
+                .subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
 
         subscriberMock.assertError(RuntimeException.class);
@@ -87,7 +89,9 @@ public class RxGcmTest {
         when(persistenceMock.getToken(applicationMock)).thenReturn(MOCK_TOKEN);
 
         TestSubscriber<String> subscriberMock = new TestSubscriber<>();
-        RxGcm.Notifications.register(applicationMock).subscribe(subscriberMock);
+        RxGcm.Notifications
+                .register(applicationMock, GcmReceiverDataMock.class, GcmReceiverMockUIBackground.class)
+                .subscribe(subscriberMock);
         subscriberMock.awaitTerminalEvent();
 
         subscriberMock.assertNoValues();
@@ -157,91 +161,96 @@ public class RxGcmTest {
         }
     }
 
-
-    @Test public void When_Call_On_Background_Notification_Emit_Properly_Item() {
+    @Test public void When_Call_On_Gcm_Receiver_UI_Background_Notification_Emit_Properly_Item() {
         when(activitiesLifecycle.isAppOnBackground()).thenReturn(true);
+
+        //GcmReceiver
+        GcmReceiverDataMock.initSubscriber();
+        when(persistenceMock.getClassNameGcmReceiver(applicationMock)).thenReturn(GcmReceiverDataMock.class.getName());
+
+        //GcmReceiverUiBackground
+        GcmReceiverMockUIBackground.initSubscriber();
+        when(persistenceMock.getClassNameGcmReceiverUIBackground(applicationMock)).thenReturn(GcmReceiverMockUIBackground.class.getName());
+
         Bundle payload = new Bundle();
-
-        GcmBackgroundReceiverMock.initSubscriber();
-
-        when(persistenceMock.getClassNameGcmBackgroundReceiver(applicationMock)).thenReturn(GcmBackgroundReceiverMock.class.getName());
         String from1 = "MockServer1";
         RxGcm.Notifications.onNotificationReceived(from1, payload);
-        String from2 = "MockServer2";
-        RxGcm.Notifications.onNotificationReceived(from2, payload);
-
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {}
 
-        List<BackgroundMessage> backgroundMessages = GcmBackgroundReceiverMock.getBackgroundMessages();
-        assertThat(backgroundMessages.get(0).getFrom(), is(from1));
-        assertThat(backgroundMessages.get(1).getFrom(), is(from2));
-        assertThat(backgroundMessages.size(), is(2));
-
-        when(persistenceMock.getClassNameGcmBackgroundReceiver(applicationMock)).thenReturn(null);
-
-        try {
-            RxGcm.Notifications.onNotificationReceived("", payload);
-            assert false;
-        } catch (Exception ignore) {}
-    }
-
-    @Test public void When_Call_On_Foreground_Notification_Emit_Properly_Item_Centralized_Version() {
-        when(activitiesLifecycle.isAppOnBackground()).thenReturn(false);
-        when(getGcmForegroundReceivers.retrieve(null)).thenReturn((List<GcmForegroundReceiver>) (List<?>) getForegroundReceivers());
-
-        Bundle payload = new Bundle();
-
-        TestSubscriber<ForegroundMessage> subscriberMock = new TestSubscriber();
-        RxGcm.Notifications.onForegroundNotification().subscribe(subscriberMock);
-
-        String from1 = "MockServer1";
-        RxGcm.Notifications.onNotificationReceived(from1, payload);
-        subscriberMock.assertValueCount(1);
-        assertThat(subscriberMock.getOnNextEvents().get(0).getFrom(), is(from1));
-        subscriberMock.assertNoErrors();
-
         String from2 = "MockServer2";
         RxGcm.Notifications.onNotificationReceived(from2, payload);
-        subscriberMock.assertValueCount(2);
-        assertThat(subscriberMock.getOnNextEvents().get(1).getFrom(), is(from2));
-        subscriberMock.assertValueCount(2);
-        subscriberMock.assertNoErrors();
-    }
-
-    @Test public void When_Call_On_Foreground_Notification_Emit_Properly_Item_Decentralized_Version() {
-        List<GcmForegroundReceiverMock> foregroundReceivers = getForegroundReceivers();
-        when(activitiesLifecycle.isAppOnBackground()).thenReturn(false);
-        when(getGcmForegroundReceivers.retrieve(null)).thenReturn((List<GcmForegroundReceiver>) (List<?>) foregroundReceivers);
-
-        Bundle payload = new Bundle();
-
-        String from1 = "MockServer1";
-        RxGcm.Notifications.onNotificationReceived(from1, payload);
-        String from2 = "MockServer2";
-        RxGcm.Notifications.onNotificationReceived(from2, payload);
-        String from3 = "MockServer3";
-        RxGcm.Notifications.onNotificationReceived(from3, payload);
-
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {}
 
-        for (GcmForegroundReceiverMock receiver : foregroundReceivers) {
-            List<ForegroundMessage> messages = receiver.getForegroundMessages();
-            assertThat(messages.get(0).getFrom(), is(from1));
-            assertThat(messages.get(1).getFrom(), is(from2));
-            assertThat(messages.get(2).getFrom(), is(from3));
-        }
+        //Check GcmReceiver
+        List<Message> receiverMessages = GcmReceiverDataMock.getMessages();
+        assertThat(receiverMessages.get(0).from(), is(from1));
+        assertThat(receiverMessages.get(1).from(), is(from2));
+        assertThat(receiverMessages.size(), is(2));
+
+        //Check GcmReceiverBakgroundUI
+        List<Message> receiverUIBackgroundMessages = GcmReceiverMockUIBackground.getMessages();
+        assertThat(receiverUIBackgroundMessages.get(0).from(), is(from1));
+        assertThat(receiverUIBackgroundMessages.get(1).from(), is(from2));
+        assertThat(receiverUIBackgroundMessages.size(), is(2));
+
+        //Check uireceiversbackground has been called only after receiver task has completed
+        long onNotificationStartTimeStamp = GcmReceiverMockUIBackground.getOnNotificationStartTimeStamp();
+        long onNotificationFinishTimeStamp = GcmReceiverDataMock.getOnNotificationFinishTimeStamp();
+
+        assert onNotificationStartTimeStamp > onNotificationFinishTimeStamp;
     }
 
-    private List<GcmForegroundReceiverMock> getForegroundReceivers() {
-        List<GcmForegroundReceiverMock> foregroundReceivers = new ArrayList();
-        foregroundReceivers.add(new GcmForegroundReceiverMock());
-        foregroundReceivers.add(new GcmForegroundReceiverMock());
-        foregroundReceivers.add(new GcmForegroundReceiverMock());
-        return foregroundReceivers;
+
+    @Test public void When_Call_On_Gcm_Receiver_UI_Foreground_Notification_Emit_Properly_Item() {
+        when(activitiesLifecycle.isAppOnBackground()).thenReturn(false);
+
+        //GcmReceiver
+        GcmReceiverDataMock.initSubscriber();
+        when(persistenceMock.getClassNameGcmReceiver(applicationMock)).thenReturn(GcmReceiverDataMock.class.getName());
+
+        //GcmReceiverUI
+        GetGcmReceiversUIForeground.Wrapper wrapperGcmReceiverUIForeground = new GetGcmReceiversUIForeground.Wrapper(new GcmReceiverMockUIForeground(), false);
+        when(getGcmForegroundReceivers.retrieve(null, null)).thenReturn(wrapperGcmReceiverUIForeground);
+
+        Bundle payload = new Bundle();
+        String from1 = "MockServer1";
+        RxGcm.Notifications.onNotificationReceived(from1, payload);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {}
+
+        String from2 = "MockServer2";
+        RxGcm.Notifications.onNotificationReceived(from2, payload);
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {}
+
+        //Check GcmReceiver
+        List<Message> receiverMessages = GcmReceiverDataMock.getMessages();
+        assertThat(receiverMessages.get(0).from(), is(from1));
+        assertThat(receiverMessages.get(1).from(), is(from2));
+        assertThat(receiverMessages.size(), is(2));
+
+        //Check GcmReceiverForegroundUI
+        GcmReceiverMockUIForeground gcmReceiverMockUIForeground = (GcmReceiverMockUIForeground) wrapperGcmReceiverUIForeground.gcmReceiverUIForeground();
+        List<ForegroundMessage> messages = gcmReceiverMockUIForeground.getMessages();
+        assertThat(messages.get(0).from(), is(from1));
+        assertThat(messages.get(1).from(), is(from2));
+        assertThat(messages.size(), is(2));
+
+        //Check uireceiversforeground has been called only after receiver task has completed
+        long onNotificationStartTimeStamp = gcmReceiverMockUIForeground.getOnNotificationStartTimeStamp();
+        long onNotificationFinishTimeStamp = GcmReceiverDataMock.getOnNotificationFinishTimeStamp();
+
+        assert onNotificationStartTimeStamp > onNotificationFinishTimeStamp;
+    }
+
+    @Test public void Keys() {
+        //Test keys esto va en otro test
     }
 
     @Test(expected=IllegalStateException.class) public void When_Call_Class_With_No_Public_Empty_Constructor_Get_Exception() {

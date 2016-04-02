@@ -1,35 +1,21 @@
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxGcm-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/3126)
 
-RxGcm
-=====
-Every time I need to add Google cloud message to an Android application, the requirement of a confusing configuration always stops me 
-to be happy doing it. 
+# RxGcm
+RxJava extension for Gcm which acts as an architectural approach to easily satisfy the requirements of an android app when dealing with push notifications.
 
-That's why I've created RxGcm. I don't want to configure any [Service](http://developer.android.com/intl/es/guide/components/services.html), and I don't want to track the state of the application in order to know 
-when to show a [Notification System](http://developer.android.com/intl/es/guide/topics/ui/notifiers/notifications.html) or an app inside message -or for that matters, which Activity/Fragment requires to be notified about the new received message. 
-Plus, it seems to me that a reactive solution which allows subscribing for notifications fits almost perfectly in the very nature of push notifications.  
+## Features:
+* Remove android boilerplate code (not need for `Manifest` or `Service(s)` configuration).
+* Decouple presentation responsibilities from data responsibilities when receiving notifications.
+* Deploy a targeting strategy to aim for the desired Activity/Fragment when receiving notifications.
 
-So, using RxGcm you do not need anymore to configure Android manifest, implementing Service(s) or keep track of your application state. And notifications will be
-dispatch through a flexible and safety pipeline, I mean Observable(s) :)
-
-
-RxGcm features:
---------------
-* Not Android Manifest configuration
-* Not need to implement Services
-* Not need to track app's state: dispatching foreground and background notifications is handled for you
-* Not worries about synchronizing threads or handling errors, which means Observable(s)
-
-Setup
------
-
+## Setup
 Add RxGcm dependency and Google Services plugin to project level build.gradle.
 
 ```gradle
 apply plugin: 'com.google.gms.google-services'
 
 dependencies {
-    compile 'com.github.VictorAlbertos:RxGcm:0.1.2'
+    compile 'com.github.VictorAlbertos:RxGcm:0.2.0'
     compile 'io.reactivex:rxjava:1.1.0'
 }
 ```
@@ -52,236 +38,176 @@ allprojects {
 
 There is, thought, one step behind which RxGcm can't do for you. You need to create a [google-services.json](https://developers.google.com/cloud-messaging/android/client) configuration file and place it in your Android application module. (You can create and download it from [here](https://developers.google.com/mobile/add?platform=android&cntapi=gcm&cnturl=https:%2F%2Fdevelopers.google.com%2Fcloud-messaging%2Fandroid%2Fclient&cntlbl=Continue%20Adding%20GCM%20Support&%3Fconfigured%3Dtrue))
 
-Usage
-=====
-RxGcm functionality is access thought [RxGcm.Notifications](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java) enum, ensuring this way that only one instance of RxGcm will be create.
+## Usage
 
-Register
---------
-To listen for Ggm notifications, you just need to call [RxGcm.Notifications.register](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L78) in your Android Application class, passing as parameter the current Android Application instance.
+### GcmReceiverData
+[GcmReceiverData](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmReceiverData.java) implementation should be responsible for **updating the data models**. The `onNotification` method requires to return an instance of the `observable` supplied as argument, after applying `doOnNext` operator to perform the update action: 
+
+```java
+public class AppGcmReceiverData implements GcmReceiverData {    
  
-```java
-public class RxSampleApp extends Application {
-
-    @Override public void onCreate() {
-        super.onCreate();
-
-        RxGcm.Notifications.register(this)
-                .subscribe(new Subscriber<String>() {
-                    @Override public void onCompleted() {}
-
-                    @Override public void onError(Throwable error) {
-                    }
-
-                    @Override public void onNext(String token) {
-                    }
-                });
-    }
-}
+ 	@Override public Observable<Message> onNotification(Observable<Message> oMessage) {         
+ 		return oMessage.doOnNext(message -> { });     
+ 	} 
+ 	
+ }
 ```
 
-**Important:** The observable will not emit the token twice. It means that it will be emit the token only the first time 
-RxGgm asks to Google for a token. But if the token is already cached, the observable will complete without emitting the item. 
-
-Background notifications
-------------------------
-To listen for notifications which has been received when the application was on background, you need to call [RxGcm.Notifications.onBackgroundNotification](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L136), passing as parameter a class which
-implements [GcmBackgroundReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmBackgroundReceiver.java) interface:
+The `observable` type is an instance of [Message](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/Message.java), which holds a reference to the android `Application` instance, the `Bundle` notification and a method called `target()`, which returns the key associated with this notification.  
 
 ```java
-public class BackgroundMessageReceiver implements GcmBackgroundReceiver {
+public class AppGcmReceiverData implements GcmReceiverData {
 
-    @Override public void onMessage(Observable<BackgroundMessage> oMessage) {
-        oMessage.subscribe(new Subscriber<BackgroundMessage>() {
-            @Override public void onCompleted() {
+    @Override public Observable<Message> onNotification(Observable<Message> oMessage) {
+        return oMessage.doOnNext(message -> {
+            Bundle payload = message.payload();
 
-            }
+            String title = payload.getString("title");
+            String body = payload.getString("body");
 
-            @Override public void onError(Throwable e) {
-
-            }
-
-            @Override public void onNext(BackgroundMessage message) {
-                //Build and show notification system
-                Bundle payload = message.getPayload();
-                Application application = message.getApplication();
-                // NotificationCompat.Builder ...
-            }
+            if (message.target().equals("issues")) SimpleCache.addIssue(new Notification(title, body));
+            else if (message.target().equals("supplies")) SimpleCache.addSupply(new Notification(title, body));
         });
     }
+    
+} 
+```
+
+To RxGcm be able to return a not null `string` value when calling `target()` method, you need to add the key rx_gcm_key_target to the payload of the push notification: 
+ 
+```json            
+{ 
+  "data": {
+    "title": "A title 4",
+    "body": "A body 4",
+    "rx_gcm_key_target”:”supplies”
+  },
+  "to" :”token_device”
+  }
 }
 ```
 
-And in your Android Application class, call RxGcm.Notifications.onBackgroundNotification passing the BackgroundMessageReceiver implementation:
+If rx_gcm_key_target is not added to the json payload, you will get a null value when calling the `target()` method. So, you can ignore this, but you would be missing the benefits of the targeting strategy.
+
+### GcmReceiverUIBackground and GcmReceiverUIForeground
+Both of them will be called only after `GcmReceiverData` `observable` has reached `onCompleted()` state. This way it’s safe to assume that any operation related to updating the data model has been successfully achieved, and now it’s time to reflect these updates in the presentation layer. 
+
+#### GcmReceiverUIBackground
+`GcmReceiverUIBackground` implementation will be called when a notification is received and the application is in the background. Probably the implementation class will be responsable for building and showing system notifications. 
 
 ```java
-public class RxSampleApp extends Application {
-
-    @Override public void onCreate() {
-        super.onCreate();
-        RxGcm.Notifications.onBackgroundNotification(BackgroundMessageReceiver.class);
-    }
+public class AppGcmReceiverUIBackground implements GcmReceiverUIBackground {   
+   
+	@Override public void onNotification(Observable<Message> oMessage) {         
+		oMessage.subscribe(message -> buildAndShowNotification(message));     
+	}
+	
 }
 ```
 
+#### GcmReceiverUIForeground
+`GcmReceiverUIForeground` implementation will be called when a notification is received and the application is in the foreground. The implementation class must be an `Activity` or an `android.support.v4.app.Fragment`. `GcmReceiverUIForeground` exposes the `target()` method, which forces to the implementation class to return a string. 
 
-Foreground notifications
-------------------------
-There are two ways to handle notifications when the app is on foreground state (it means its ui is visible to the user).
-
-You can manage notifications in a centralized way:
+RxGcm internally compares this string to the value of the rx_gcm_key_target node payload notification. If the current `Activity` or visible `Fragment` `target()` value matches with the one of rx_gcm_key_target node, the `isTarget()` method of the [ForegroundMessage](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/ForegroundMessage.java) class will return true, otherwise it will return false. 
 
 ```java
-public class RxSampleApp extends Application {
+public class ActivityIssue extends Activity implements GcmReceiverUIForeground {      
+	
+	@Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {   
+	    oForegroundMessage.subscribe(foregroundMessage -> {            
+	       if (foregroundMessage.isTarget()) adapter.notifyDataSetChanged();             
+	       else showAlert();         
+	    });     
+	}      
 
-    @Override public void onCreate() {
-        super.onCreate();
-        
-        RxGcm.Notifications.onForegroundNotification().subscribe(new Subscriber<ForegroundMessage>() {
-            @Override public void onCompleted() {}
-        
-            @Override public void onError(Throwable e) {}
-        
-            @Override public void onNext(ForegroundMessage foregroundMessage) {
-                Activity activity = foregroundMessage.getCurrentActivity();
-                Bundle payload = foregroundMessage.getPayload();
-            }
-        });
-    }
-}
-```
-
-
-Or you can adopt a more granular approach, implementing [GcmForegroundReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmForegroundReceiver.java) interface in those Activities/Fragments which you want to subscribe for gcm notifications: 
-
-```java
-public class MainActivity extends AppCompatActivity implements GcmForegroundReceiver {
-
-
-    @Override public void onReceiveMessage(Observable<ForegroundMessage> oMessage) {
-        oMessage.subscribe(new Subscriber<ForegroundMessage>() {
-            @Override public void onCompleted() {
-
-            }
-
-            @Override public void onError(Throwable e) {
-
-            }
-
-            @Override public void onNext(ForegroundMessage foregroundMessage) {
-                Bundle payload = foregroundMessage.getPayload();
-            }
-        });
-    }
+	@Override public String target() {         
+		return "issues";     
+	}    
+	  
 }
 ```
 
 ```java
-public class ChildFragment extends android.support.v4.app.Fragment implements GcmForegroundReceiver {
+public class FragmentSupply extends android.support.v4.app.Fragment implements GcmReceiverUIForeground {      
+	
+	@Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {   
+	    oForegroundMessage.subscribe(foregroundMessage -> {            
+	       if (foregroundMessage.isTarget()) adapter.notifyDataSetChanged();             
+	       else showAlert();         
+	    });     
+	}      
 
-    @Override public void onReceiveMessage(Observable<ForegroundMessage> oMessage) {
-        oMessage.subscribe(new Subscriber<ForegroundMessage>() {
-            @Override public void onCompleted() {}
+	@Override public String target() {         
+		return "supplies";     
+	}    
+	  
+}
+```
 
-            @Override public void onError(Throwable e) {}
+**Limitation:**: Your fragments need to extend from android.support.v4.app.Fragment` instead of `android.app.Fragment`, otherwise they won't be notified. 
 
-            @Override public void onNext(ForegroundMessage foregroundMessage) {
-                Bundle payload = foregroundMessage.getPayload();
-            }
-        });
+### RefreshTokenReceiver for subscribing on token updates
+[GcmRefreshTokenReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmRefreshTokenReceiver.java) implementation will be called when the token has been modified. As the [documentation](https://developers.google.com/android/reference/com/google/android/gms/iid/InstanceIDListenerService#onTokenRefresh) points out, the token device may need to be refreshed for some particular reason. 
+
+```java
+public class RefreshTokenReceiver implements GcmRefreshTokenReceiver {
+    
+    @Override public void onTokenReceive(Observable<TokenUpdate> oTokenUpdate) {
+        oTokenUpdate.subscribe(tokenUpdate -> {}, error -> {});
     }
     
 }
 ```
-
-**Limitation:**: Your fragments need to extend from android.support.v4.app.Fragment instead of android.app.Fragment, otherwise they will not be notified. 
-
-You can, of course, combine both of them. 
-
-
-Retrieving current token 
-------------------------
+ 
+### Retrieving current token 
 If at some point you need to retrieve the gcm token device -e.g for updating the value on your server, you could do it easily calling [RxGcm.Notifications.currentToken](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L114):
 
 ```java
-RxGcm.Notifications.currentToken().subscribe(new Subscriber<String>() {
-    @Override public void onCompleted() {
-
-    }
-
-    @Override public void onError(Throwable e) {
-
-    }
-
-    @Override public void onNext(String token) {
-
-    }
-});
+    RxGcm.Notifications.currentToken().subscribe(token -> {}, error -> {});
 ```
 
 
-Subscribing for token updates
------------------------------
-As the [documentation](https://developers.google.com/android/reference/com/google/android/gms/iid/InstanceIDListenerService#onTokenRefresh) points out, the token device may need to be refreshed for some particular reason. 
-In order to you be notified, you can call [RxGcm.Notifications.onRefreshToken](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L144), passing as parameter a class which implements [GcmRefreshTokenReceiver](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/GcmRefreshTokenReceiver.java) interface:
-
-```java
-public class RefreshTokenReceiver implements GcmRefreshTokenReceiver {
-    @Override public void onTokenReceive(Observable<TokenUpdate> oTokenUpdate) {
-        oTokenUpdate.subscribe(new Subscriber<TokenUpdate>() {
-            @Override public void onCompleted() {
-                
-            }
-
-            @Override public void onError(Throwable e) {
-
-            }
-
-            @Override public void onNext(TokenUpdate tokenUpdate) {
-
-            }
-        });
-    }
-}
-```
- 
-And in your Android Application class, call RxGcm.Notifications.onRefreshToken passing the GcmRefreshTokenReceiver implementation:
-
+### Register RxGcm classes
+Once you have implemented GcmReceiverData and GcmReceiverUIBackground interfaces is time to register them in your Android `Application` class calling [RxGcm.Notifications.register](https://github.com/VictorAlbertos/RxGcm/blob/master/rx_gcm/src/main/java/rx_gcm/internal/RxGcm.java#L79).
+Plus, register `RefreshTokenReceiver implementation` too at this point. 
+   
 ```java
 public class RxSampleApp extends Application {
 
     @Override public void onCreate() {
         super.onCreate();
+
+        RxGcm.Notifications.register(this, AppGcmReceiverData.class, AppGcmReceiverUIBackground.class)
+                .subscribe(token -> {}, error -> {});   
+                
         RxGcm.Notifications.onRefreshToken(RefreshTokenReceiver.class);
     }
+
 }
 ```
 
+**Important:** The `observable` returned by `RxGcm.Notifications.register()`method will not emit the token twice. It means that it will be emit the token only the first time 
+RxGgm asks to Google for a token. But if the token is already cached, the observable will complete without emitting the item. 
 
-Threading
----------
+### Threading
 RxGcm uses internally [RxAndroid](https://github.com/ReactiveX/RxAndroid). Thanks to this, each observable created by RxGcm observes on the Main Thread and subscribe on an IO thread. 
 This means you do not need to worry about threading and sync. But if you  need to change this behaviour, you can do it easily setting in which scheduler the observable needs to observe and subscribe.
 
-Examples
---------
+## Examples
 There is a complete example of RxGcm in the [app module](https://github.com/VictorAlbertos/RxGcm/tree/master/app). Plus, it has an integration test managed by [Espresso test kit](https://google.github.io/android-testing-support-library/) which show several uses cases.
 
-Testing notification
---------------------
+## Testing notification
 You can easily [send http post request](https://developers.google.com/cloud-messaging/downstream) to Google Cloud Messaging server using Postman or Advanced Rest Client.
 Or you can send directly push notifications using [this page](http://1-dot-sigma-freedom-752.appspot.com/gcmpusher.jsp). 
 
-Author
--------
+## Author
 **Víctor Albertos**
-
 * <https://twitter.com/_victorAlbertos>
 * <https://linkedin.com/in/victoralbertos>
 * <https://github.com/VictorAlbertos>
 
-Another author's libraries using RxJava:
-----------------------------------------
+## Another author's libraries using RxJava:
 * [RxCache](https://github.com/VictorAlbertos/RxCache): Reactive caching library for Android and Java. 
+* [RxActivityResult](https://github.com/VictorAlbertos/RxActivityResult): A reactive-tiny-badass-vindictive library to break with the OnActivityResult implementation as it breaks the observables chain. 
 
 

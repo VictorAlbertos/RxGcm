@@ -19,8 +19,11 @@ package rx_gcm;
 import rx.Observable;
 
 /**
- * The Activity or Fragment which implements this interface will receive messages when application is on foreground state.
+ * The class which implements this interface will receive the push notifications
  */
-public interface GcmForegroundReceiver {
-    void onReceiveMessage(Observable<ForegroundMessage> oMessage);
+public interface GcmReceiverData {
+    /**
+     * @return return the new instance observable after applying doOnNext operator.
+     */
+    Observable<Message> onNotification(Observable<Message> oMessage);
 }

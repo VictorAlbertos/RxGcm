@@ -18,30 +18,37 @@ package rx_gcm;
 
 import android.app.Application;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 /**
- * Entity received as the message when application is on background state.
+ * Entity received as the message on notifications events.
  */
-public class BackgroundMessage {
-    private final Application application;
+public class Message {
     private final String from;
     private final Bundle payload;
+    private final String target;
+    private final Application application;
 
-    public BackgroundMessage(Application application, String from, Bundle bundle) {
-        this.application = application;
+    public Message(String from, Bundle payload, String target, Application application) {
         this.from = from;
-        this.payload = bundle;
+        this.payload = payload;
+        this.target = target;
+        this.application = application;
     }
 
-    public Application getApplication() {
-        return application;
+    public String from() {
+        return from;
     }
 
-    public Bundle getPayload() {
+    @Nullable public String target() {
+        return target;
+    }
+
+    public Bundle payload() {
         return payload;
     }
 
-    public String getFrom() {
-        return from;
+    public Application application() {
+        return application;
     }
 }

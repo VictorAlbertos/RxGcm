@@ -22,24 +22,33 @@ import android.preference.PreferenceManager;
 
 class Persistence {
 
-    void saveClassNameGcmBackgroundReceiver(String name, Context context) {
+    void saveClassNameGcmReceiverAndGcmReceiverUIBackground(String gcmReceiverClassName, String gcmReceiverUIBackgroundClassName, Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        sharedPreferences.edit().putString(Constants.KEY_SHARED_CLASS_NAME_GCM_BACKGROUND_RECEIVER, name).apply();
+
+        sharedPreferences.edit()
+                .putString(Constants.KEY_SHARED_PREFERENCES_CLASS_NAME_GCM_RECEIVER, gcmReceiverClassName)
+                .putString(Constants.KEY_SHARED_PREFERENCES_CLASS_NAME_GCM_RECEIVER_UI_BACKGROUND, gcmReceiverUIBackgroundClassName)
+                .apply();
     }
 
-    String getClassNameGcmBackgroundReceiver(Context context) {
+    String getClassNameGcmReceiver(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPreferences.getString(Constants.KEY_SHARED_CLASS_NAME_GCM_BACKGROUND_RECEIVER, null);
+        return sharedPreferences.getString(Constants.KEY_SHARED_PREFERENCES_CLASS_NAME_GCM_RECEIVER, null);
+    }
+
+    String getClassNameGcmReceiverUIBackground(Context context) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPreferences.getString(Constants.KEY_SHARED_PREFERENCES_CLASS_NAME_GCM_RECEIVER_UI_BACKGROUND, null);
     }
 
     void saveClassNameGcmRefreshTokenReceiver(String name, Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        sharedPreferences.edit().putString(Constants.KEY_SHARED_CLASS_NAME_GCM_REFRESH_TOKEN, name).apply();
+        sharedPreferences.edit().putString(Constants.KEY_SHARED_PREFERENCES_CLASS_NAME_GCM_REFRESH_TOKEN, name).apply();
     }
 
     String getClassNameGcmRefreshTokenReceiver(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPreferences.getString(Constants.KEY_SHARED_CLASS_NAME_GCM_REFRESH_TOKEN, null);
+        return sharedPreferences.getString(Constants.KEY_SHARED_PREFERENCES_CLASS_NAME_GCM_REFRESH_TOKEN, null);
     }
 
     void saveToken(String token, Context context) {

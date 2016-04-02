@@ -21,26 +21,32 @@ import java.util.List;
 
 import rx.Observable;
 import rx.functions.Action1;
-import rx_gcm.BackgroundMessage;
-import rx_gcm.GcmBackgroundReceiver;
+import rx_gcm.GcmReceiverUIBackground;
+import rx_gcm.Message;
 
-public class GcmBackgroundReceiverMock implements GcmBackgroundReceiver {
-    private static List<BackgroundMessage> backgroundMessages;
+public class GcmReceiverMockUIBackground implements GcmReceiverUIBackground {
+    private static List<Message> messages;
+    private static long onNotificationStartTimeStamp;
 
     public static void initSubscriber() {
-        backgroundMessages = new ArrayList<>();
+        messages = new ArrayList<>();
     }
 
-    @Override public void onMessage(Observable<BackgroundMessage> oMessage) {
-        oMessage.subscribe(new Action1<BackgroundMessage>() {
-            @Override public void call(BackgroundMessage backgroundMessage) {
-                backgroundMessages.add(backgroundMessage);
+    @Override public void onNotification(Observable<Message> oMessage) {
+        onNotificationStartTimeStamp = System.currentTimeMillis();
+
+        oMessage.subscribe(new Action1<Message>() {
+            @Override public void call(Message message) {
+                messages.add(message);
             }
         });
     }
 
-    public static List<BackgroundMessage> getBackgroundMessages() {
-        return backgroundMessages;
+    public static List<Message> getMessages() {
+        return messages;
     }
 
+    public static long getOnNotificationStartTimeStamp() {
+        return onNotificationStartTimeStamp;
+    }
 }

@@ -1,4 +1,4 @@
-package victoralbertos.io.rxgcm.api;
+package victoralbertos.io.rxgcm.data.api;
 
 import retrofit.Response;
 import retrofit.http.Body;

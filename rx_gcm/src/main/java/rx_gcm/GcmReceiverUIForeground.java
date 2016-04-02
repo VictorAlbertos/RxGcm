@@ -16,22 +16,18 @@
 
 package rx_gcm;
 
-/**
- * Entity received as the message on foreground notifications events.
- */
-public class ForegroundMessage extends Message {
-    private final boolean targetScreen;
+import rx.Observable;
 
-    public ForegroundMessage(Message message, boolean targetScreen) {
-        super(message.from(), message.payload(), message.target(), message.application());
-        this.targetScreen = targetScreen;
-    }
+/**
+ * The Activity or Fragments which implement this interface will receive the push notifications when the application is onForeground state
+ * just after GcmReceiverData has completed its task.
+ * @see GcmReceiverData
+ */
+public interface GcmReceiverUIForeground {
+    void onNotification(Observable<ForegroundMessage> oForegroundMessage);
 
     /**
-     * @return true if the current Activity or Fragment matches with the desired target specified in the bundle notification by the server.
-     * @see GcmReceiverUIForeground
+     * @return The value provided in the bundle notification by the server to be used as a filter when updating data model or seeking for the activity/fragment to be notified.
      */
-    public boolean isTarget() {
-        return targetScreen;
-    }
+    String target();
 }

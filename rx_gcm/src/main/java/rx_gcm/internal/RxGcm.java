@@ -22,19 +22,17 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.util.List;
-
 import rx.Observable;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.observables.ConnectableObservable;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
-import rx_gcm.BackgroundMessage;
 import rx_gcm.ForegroundMessage;
-import rx_gcm.GcmBackgroundReceiver;
-import rx_gcm.GcmForegroundReceiver;
+import rx_gcm.GcmReceiverData;
+import rx_gcm.GcmReceiverUIBackground;
 import rx_gcm.GcmRefreshTokenReceiver;
+import rx_gcm.Message;
 import rx_gcm.TokenUpdate;
 import victoralbertos.io.rx_gcm.R;
 
@@ -44,21 +42,21 @@ import victoralbertos.io.rx_gcm.R;
 public enum RxGcm {
     Notifications;
 
-    private Subscriber<? super ForegroundMessage> onForegroundNotificationSubscriber;
+    private final static String RX_GCM_KEY_TARGET = "rx_gcm_key_target"; //VisibleForTesting
     private ActivitiesLifecycleCallbacks activitiesLifecycle;
     private GetGcmServerToken getGcmServerToken;
     private Persistence persistence;
-    private GetGcmForegroundReceivers getGcmForegroundReceivers;
+    private GetGcmReceiversUIForeground getGcmReceiversUIForeground;
     private Scheduler mainThreadScheduler;
     private boolean testing;
 
     //VisibleForTesting
-    void initForTesting(GetGcmServerToken getGcmServerToken, Persistence persistence, ActivitiesLifecycleCallbacks activitiesLifecycle, GetGcmForegroundReceivers getGcmForegroundReceivers) {
+    void initForTesting(GetGcmServerToken getGcmServerToken, Persistence persistence, ActivitiesLifecycleCallbacks activitiesLifecycle, GetGcmReceiversUIForeground getGcmReceiversUIForeground) {
         this.testing = true;
         this.getGcmServerToken = getGcmServerToken;
         this.persistence = persistence;
         this.activitiesLifecycle = activitiesLifecycle;
-        this.getGcmForegroundReceivers = getGcmForegroundReceivers;
+        this.getGcmReceiversUIForeground = getGcmReceiversUIForeground;
         this.mainThreadScheduler = Schedulers.io();
     }
 
@@ -66,22 +64,25 @@ public enum RxGcm {
         if (testing || activitiesLifecycle != null) return;
         getGcmServerToken = new GetGcmServerToken();
         persistence = new Persistence();
-        getGcmForegroundReceivers = new GetGcmForegroundReceivers();
+        getGcmReceiversUIForeground = new GetGcmReceiversUIForeground();
         mainThreadScheduler = AndroidSchedulers.mainThread();
         activitiesLifecycle = new ActivitiesLifecycleCallbacks(application);
     }
 
     /**
-     * Register the device on Google Cloud Messaging server.
+     * Register the device on Google Cloud Messaging server and set the class for listening messages.
      * The observable will not emit the token twice. It means that it will be emit the token only the first time. RxGgm asks to Google for a token.
-     * @param application The Android Application class
+     * @param application The Android Application class.
+     * @param gcmReceiverClass The class which implements GcmReceiver.
+     * @see GcmReceiverData
      */
-    public Observable<String> register(final Application application) {
+    public <T extends GcmReceiverData, U extends GcmReceiverUIBackground> Observable<String> register(final Application application, final Class<T> gcmReceiverClass, final Class<U> gcmReceiverUIBackgroundClass) {
         init(application);
 
         Observable.OnSubscribe<String> onSubscribe = new Observable.OnSubscribe<String>() {
             @Override public void call(Subscriber<? super String> subscriber) {
                 Context context = activitiesLifecycle.getApplication();
+                persistence.saveClassNameGcmReceiverAndGcmReceiverUIBackground(gcmReceiverClass.getName(), gcmReceiverUIBackgroundClass.getName() ,context);
 
                 String token = persistence.getToken(context);
                 if (token != null) {
@@ -128,32 +129,11 @@ public enum RxGcm {
     }
 
     /**
-     * Sets the class for listening background messages.
-     * @param aClass The class which implements GcmBackgroundReceiver and so the class which will be notified when a message has been received
-     * @see GcmBackgroundReceiver
-     */
-    public <T extends GcmBackgroundReceiver> void onBackgroundNotification(Class<T> aClass) {
-        persistence.saveClassNameGcmBackgroundReceiver(aClass.getName(), activitiesLifecycle.getApplication());
-    }
-
-    /**
      * @param aClass The class which implements GcmRefreshTokenReceiver and so the class which will be notified when a token refresh happens.
      * @see GcmRefreshTokenReceiver
      */
     public <T extends GcmRefreshTokenReceiver> void onRefreshToken(Class<T> aClass) {
         persistence.saveClassNameGcmRefreshTokenReceiver(aClass.getName(), activitiesLifecycle.getApplication());
-    }
-
-    /**
-     * To subscribe for foreground messages
-     * @return An observable which emits messages received from Gcm meanwhile the app is on foreground state.
-     */
-    public Observable<ForegroundMessage> onForegroundNotification() {
-        return Observable.create(new Observable.OnSubscribe<ForegroundMessage>() {
-            @Override public void call(Subscriber<? super ForegroundMessage> subscriber) {
-                onForegroundNotificationSubscriber = subscriber;
-            }
-        }).subscribeOn(Schedulers.io()).observeOn(mainThreadScheduler);
     }
 
     void onTokenRefreshed() {
@@ -189,48 +169,61 @@ public enum RxGcm {
 
     void onNotificationReceived(String from, Bundle payload) {
         Application application = activitiesLifecycle.getApplication();
+        String target = payload != null ? payload.getString(RX_GCM_KEY_TARGET, null) : "";
 
-        if (activitiesLifecycle.isAppOnBackground()) {
-            BackgroundMessage message = new BackgroundMessage(application, from, payload);
-            notifyBackgroundMessage(message);
-        } else {
-            ForegroundMessage message = new ForegroundMessage(activitiesLifecycle.getLiveActivityOrNull(), from, payload);
-            notifyForegroundMessage(message);
-        }
+        Observable<Message> oMessage = Observable.just(new Message(from, payload, target, application));
+
+        String className = persistence.getClassNameGcmReceiver(activitiesLifecycle.getApplication());
+        GcmReceiverData gcmReceiverData = getInstanceClassByName(className);
+
+        gcmReceiverData.onNotification(oMessage)
+                .doOnNext(new Action1<Message>() {
+                    @Override public void call(Message message) {
+                        if (activitiesLifecycle.isAppOnBackground()) {
+                            notifyGcmReceiverBackgroundMessage(message);
+                        } else {
+                            notifyGcmReceiverForegroundMessage(message);
+                        }
+                    }
+                })
+                .subscribe();
     }
 
-    private void notifyBackgroundMessage(BackgroundMessage message) {
-        String className = persistence.getClassNameGcmBackgroundReceiver(activitiesLifecycle.getApplication());
+    private void notifyGcmReceiverBackgroundMessage(Message message) {
+        String className = persistence.getClassNameGcmReceiverUIBackground(activitiesLifecycle.getApplication());
+
+        GcmReceiverUIBackground gcmReceiverUIBackground = getInstanceClassByName(className);
+        Observable<Message> oNotification = Observable.just(message).observeOn(mainThreadScheduler);
+        gcmReceiverUIBackground.onNotification(oNotification);
+    }
+
+    private void notifyGcmReceiverForegroundMessage(Message message) {
+        String className = persistence.getClassNameGcmReceiver(activitiesLifecycle.getApplication());
+
         if (className == null) {
-            Log.w(getAppName(), Constants.NOT_RECEIVER_FOR_BACKGROUND_NOTIFICATIONS);
+            Log.w(getAppName(), Constants.NOT_RECEIVER_FOR_FOREGROUND_UI_NOTIFICATIONS);
             return;
         }
 
-        GcmBackgroundReceiver gcmBackgroundReceiver = getInstanceClassByName(className);
-        Observable<BackgroundMessage> oNotification = Observable.just(message).observeOn(mainThreadScheduler);
-        gcmBackgroundReceiver.onMessage(oNotification);
+        GetGcmReceiversUIForeground.Wrapper wrapperGcmReceiverUIForeground = getGcmReceiversUIForeground.retrieve(message.target(), activitiesLifecycle.getLiveActivityOrNull());
+        ForegroundMessage foregroundMessage = new ForegroundMessage(message, wrapperGcmReceiverUIForeground.isTargetScreen());
+
+        Observable<ForegroundMessage> oNotification = Observable.just(foregroundMessage).observeOn(mainThreadScheduler);
+        wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
+                .onNotification(oNotification);
     }
 
-    private void notifyForegroundMessage(ForegroundMessage message) {
-        if (onForegroundNotificationSubscriber != null){
-            onForegroundNotificationSubscriber.onNext(message);
+    <T> Class<T> getClassByName(String className) {
+        try {
+            return (Class<T>) Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
-
-        Observable<ForegroundMessage> observable = Observable.just(message).observeOn(mainThreadScheduler);
-        ConnectableObservable connectableObservable = observable.publish();
-
-        List<GcmForegroundReceiver> foregroundReceivers = getGcmForegroundReceivers.retrieve(activitiesLifecycle.getLiveActivityOrNull());
-        for (GcmForegroundReceiver foregroundReceiver : foregroundReceivers) {
-            foregroundReceiver.onReceiveMessage(connectableObservable);
-        }
-
-        connectableObservable.connect();
     }
 
     <T> T getInstanceClassByName(String className) {
         try {
-            Class<T> clazz = (Class<T>) Class.forName(className);
-            T instance = clazz.newInstance();
+            T instance = (T) getClassByName(className).newInstance();
             return instance;
         } catch (Exception e) {
             String error = Constants.ERROR_NOT_PUBLIC_EMPTY_CONSTRUCTOR_FOR_CLASS;
