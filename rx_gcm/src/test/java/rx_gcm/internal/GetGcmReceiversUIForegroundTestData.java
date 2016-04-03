@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
-import rx_gcm.ForegroundMessage;
 import rx_gcm.GcmReceiverUIForeground;
+import rx_gcm.Message;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNull;
@@ -119,7 +119,9 @@ public class GetGcmReceiversUIForegroundTestData {
     public static class ActivityMockReceiver extends FragmentActivity implements GcmReceiverUIForeground {
         private static final String SCREEN_NAME = ActivityMockReceiver.class.getName();
 
-        @Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {}
+        @Override public void onTargetNotification(Observable<Message> oMessage) {}
+
+        @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {}
 
         @Override public String target() {
             return null;
@@ -129,7 +131,9 @@ public class GetGcmReceiversUIForegroundTestData {
     public static class FragmentMock1Receiver extends Fragment implements GcmReceiverUIForeground {
         private static final String SCREEN_NAME = FragmentMock1Receiver.class.getName();
 
-        @Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {}
+        @Override public void onTargetNotification(Observable<Message> oMessage) {}
+
+        @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {}
 
         @Override public String target() {
             return SCREEN_NAME;
@@ -139,7 +143,9 @@ public class GetGcmReceiversUIForegroundTestData {
     public static class FragmentMock2Receiver extends Fragment implements GcmReceiverUIForeground {
         private static final String SCREEN_NAME = FragmentMock2Receiver.class.getName();
 
-        @Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {}
+        @Override public void onTargetNotification(Observable<Message> oMessage) {}
+
+        @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {}
 
         @Override public String target() {
             return SCREEN_NAME;

@@ -10,19 +10,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".presentation.ActivityIssue"
+            android:name=".presentation.HostActivityIssues"
             android:label="Issues"
             android:noHistory="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".presentation.HostActivitySupply"
+            android:name=".presentation.HostActivitySupplies"
             android:label="Supplies"
             android:noHistory="true"
             android:screenOrientation="portrait"

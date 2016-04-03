@@ -92,6 +92,6 @@ class GetGcmReceiversUIForeground {
     //exists for testing purposes
     boolean isVisible(Fragment fragment) {
         if (mock) return true;
-        return fragment.isVisible();
+        return fragment.getUserVisibleHint();
     }
 }

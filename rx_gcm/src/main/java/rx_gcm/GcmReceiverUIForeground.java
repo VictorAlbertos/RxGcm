@@ -24,7 +24,17 @@ import rx.Observable;
  * @see GcmReceiverData
  */
 public interface GcmReceiverUIForeground {
-    void onNotification(Observable<ForegroundMessage> oForegroundMessage);
+    /**
+     * Called when Activity or Fragment matches with the desired target specified in the bundle notification.
+     * @see GcmReceiverUIForeground
+     */
+    void onTargetNotification(Observable<Message> oMessage);
+
+    /**
+     * Called when Activity or Fragment does not match with the desired target specified in the bundle notification.
+     * @see GcmReceiverUIForeground
+     */
+    void onMismatchTargetNotification(Observable<Message> oMessage);
 
     /**
      * @return The value provided in the bundle notification by the server to be used as a filter when updating data model or seeking for the activity/fragment to be notified.

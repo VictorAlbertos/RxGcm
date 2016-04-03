@@ -1,5 +1,6 @@
 package victoralbertos.io.rxgcm.presentation;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,25 +14,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx_gcm.ForegroundMessage;
 import rx_gcm.GcmReceiverUIForeground;
+import rx_gcm.Message;
 import victoralbertos.io.rxgcm.R;
 import victoralbertos.io.rxgcm.data.Cache;
 import victoralbertos.io.rxgcm.data.api.GcmServerService;
+import victoralbertos.io.rxgcm.data.entities.Notification;
 
 /**
  * Created by victor on 08/02/16.
  */
-public class FragmentSupply extends Fragment implements GcmReceiverUIForeground {
+public abstract class FragmentBase extends Fragment implements GcmReceiverUIForeground {
     private GcmServerService gcmServerService;
-    private NotificationAdapter notificationAdapter;
+    protected NotificationAdapter notificationAdapter;
 
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.common_layout, container, false);
+        return inflater.inflate(R.layout.base_fragment, container, false);
     }
 
     @Override public void onActivityCreated(Bundle savedInstanceState) {
@@ -71,10 +74,11 @@ public class FragmentSupply extends Fragment implements GcmReceiverUIForeground 
 
     private void goToSuppliesClickListener() {
         Button button = (Button) findViewById(R.id.bt_go_to_other_screen);
-        button.setText("Go to issues");
+        button.setText(this instanceof FragmentSupplies ? "Go to issues" : "Go to supplies");
 
         button.setOnClickListener(view -> {
-            startActivity(new Intent(getActivity(), ActivityIssue.class));
+            Class<? extends Activity> clazz = this instanceof FragmentSupplies ? HostActivityIssues.class : HostActivitySupplies.class;
+            startActivity(new Intent(getActivity(), clazz));
         });
     }
 
@@ -83,28 +87,21 @@ public class FragmentSupply extends Fragment implements GcmReceiverUIForeground 
         rv_notifications.setHasFixedSize(true);
         rv_notifications.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        notificationAdapter = new NotificationAdapter(Cache.Pool.getSupplies());
+        List<Notification> notifications = this instanceof FragmentSupplies ? Cache.Pool.getSupplies() : Cache.Pool.getIssues();
+        notificationAdapter = new NotificationAdapter(notifications);
         rv_notifications.setAdapter(notificationAdapter);
     }
 
-    @Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {
-        oForegroundMessage.subscribe(foregroundMessage -> {
-
-            if (foregroundMessage.isTarget()) notificationAdapter.notifyDataSetChanged();
-            else showAlert();
-        });
+    @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {
+        showAlert();
     }
 
-    @Override public String target() {
-        return GcmServerService.TARGET_SUPPLY_GCM;
-    }
-
-    public static final String message = "New issue has been added. Go and check it!";
+    public static final String MISMATCH_TARGET_MESSAGE = "New notification has been added. Go and check it!";
     public void showAlert() {
         TextView tv_log = (TextView) findViewById(R.id.tv_log);
 
         Observable.just("")
-                .doOnNext(empty -> tv_log.setText(message))
+                .doOnNext(empty -> tv_log.setText(MISMATCH_TARGET_MESSAGE))
                 .delay(5, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(empty -> tv_log.setText(empty));

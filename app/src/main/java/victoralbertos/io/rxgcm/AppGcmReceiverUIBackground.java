@@ -15,8 +15,8 @@ import rx.Observable;
 import rx_gcm.GcmReceiverUIBackground;
 import rx_gcm.Message;
 import victoralbertos.io.rxgcm.data.api.GcmServerService;
-import victoralbertos.io.rxgcm.presentation.ActivityIssue;
-import victoralbertos.io.rxgcm.presentation.HostActivitySupply;
+import victoralbertos.io.rxgcm.presentation.HostActivityIssues;
+import victoralbertos.io.rxgcm.presentation.HostActivitySupplies;
 
 /**
  * Created by victor on 01/04/16.
@@ -49,11 +49,11 @@ public class AppGcmReceiverUIBackground implements GcmReceiverUIBackground {
     }
 
     private PendingIntent getPendingIntentForNotification(Application application, Message message) {
-        Class<? extends Activity> classActivity =  message.target().equals(GcmServerService.TARGET_ISSUE_GCM) ? ActivityIssue.class : HostActivitySupply.class;
+        Class<? extends Activity> classActivity =  message.target().equals(GcmServerService.TARGET_ISSUE_GCM) ? HostActivityIssues.class : HostActivitySupplies.class;
 
         Intent resultIntent = new Intent(application, classActivity);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(application);
-        stackBuilder.addParentStack(ActivityIssue.class);
+        stackBuilder.addParentStack(classActivity);
         stackBuilder.addNextIntent(resultIntent);
 
         return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);

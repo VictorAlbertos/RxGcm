@@ -27,7 +27,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 
 import rx.observers.TestSubscriber;
-import rx_gcm.ForegroundMessage;
 import rx_gcm.Message;
 import rx_gcm.TokenUpdate;
 
@@ -237,7 +236,7 @@ public class RxGcmTest {
 
         //Check GcmReceiverForegroundUI
         GcmReceiverMockUIForeground gcmReceiverMockUIForeground = (GcmReceiverMockUIForeground) wrapperGcmReceiverUIForeground.gcmReceiverUIForeground();
-        List<ForegroundMessage> messages = gcmReceiverMockUIForeground.getMessages();
+        List<Message> messages = gcmReceiverMockUIForeground.getMessages();
         assertThat(messages.get(0).from(), is(from1));
         assertThat(messages.get(1).from(), is(from2));
         assertThat(messages.size(), is(2));

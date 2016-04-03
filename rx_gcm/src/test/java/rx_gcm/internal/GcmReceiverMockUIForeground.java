@@ -21,23 +21,25 @@ import java.util.List;
 
 import rx.Observable;
 import rx.functions.Action1;
-import rx_gcm.ForegroundMessage;
 import rx_gcm.GcmReceiverUIForeground;
+import rx_gcm.Message;
 
 public class GcmReceiverMockUIForeground implements GcmReceiverUIForeground {
-    private final List<ForegroundMessage> messages;
+    private final List<Message> messages;
     private long onNotificationStartTimeStamp;
 
     public GcmReceiverMockUIForeground() {
         this.messages = new ArrayList<>();
     }
 
-    @Override public void onNotification(Observable<ForegroundMessage> oForegroundMessage) {
+    @Override public void onTargetNotification(Observable<Message> oMessage) {}
+
+    @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {
         onNotificationStartTimeStamp = System.currentTimeMillis();
 
-        oForegroundMessage.subscribe(new Action1<ForegroundMessage>() {
-            @Override public void call(ForegroundMessage foregroundMessage) {
-                messages.add(foregroundMessage);
+        oMessage.subscribe(new Action1<Message>() {
+            @Override public void call(Message message) {
+                messages.add(message);
             }
         });
     }
@@ -46,7 +48,7 @@ public class GcmReceiverMockUIForeground implements GcmReceiverUIForeground {
         return "GcmReceiverMockUI";
     }
 
-    public List<ForegroundMessage> getMessages() {
+    public List<Message> getMessages() {
         return messages;
     }
 

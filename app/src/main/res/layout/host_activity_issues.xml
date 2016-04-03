@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/child_fragment"
-        android:name="victoralbertos.io.rxgcm.presentation.FragmentSupplies"
+        android:name="victoralbertos.io.rxgcm.presentation.FragmentIssue"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="10dp"

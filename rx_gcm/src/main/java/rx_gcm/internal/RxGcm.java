@@ -28,7 +28,6 @@ import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
-import rx_gcm.ForegroundMessage;
 import rx_gcm.GcmReceiverData;
 import rx_gcm.GcmReceiverUIBackground;
 import rx_gcm.GcmRefreshTokenReceiver;
@@ -191,10 +190,16 @@ public enum RxGcm {
 
     private void notifyGcmReceiverBackgroundMessage(Message message) {
         String className = persistence.getClassNameGcmReceiverUIBackground(activitiesLifecycle.getApplication());
+        final GcmReceiverUIBackground gcmReceiverUIBackground = getInstanceClassByName(className);
 
-        GcmReceiverUIBackground gcmReceiverUIBackground = getInstanceClassByName(className);
-        Observable<Message> oNotification = Observable.just(message).observeOn(mainThreadScheduler);
-        gcmReceiverUIBackground.onNotification(oNotification);
+        Observable.just(message).observeOn(mainThreadScheduler)
+                .subscribe(new Action1<Message>() {
+                    @Override
+                    public void call(Message message) {
+                        Observable<Message> oNotification = Observable.just(message);
+                        gcmReceiverUIBackground.onNotification(oNotification);
+                    }
+                });
     }
 
     private void notifyGcmReceiverForegroundMessage(Message message) {
@@ -205,12 +210,25 @@ public enum RxGcm {
             return;
         }
 
-        GetGcmReceiversUIForeground.Wrapper wrapperGcmReceiverUIForeground = getGcmReceiversUIForeground.retrieve(message.target(), activitiesLifecycle.getLiveActivityOrNull());
-        ForegroundMessage foregroundMessage = new ForegroundMessage(message, wrapperGcmReceiverUIForeground.isTargetScreen());
+        final GetGcmReceiversUIForeground.Wrapper wrapperGcmReceiverUIForeground = getGcmReceiversUIForeground.retrieve(message.target(), activitiesLifecycle.getLiveActivityOrNull());
 
-        Observable<ForegroundMessage> oNotification = Observable.just(foregroundMessage).observeOn(mainThreadScheduler);
-        wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
-                .onNotification(oNotification);
+        if (wrapperGcmReceiverUIForeground.isTargetScreen()) {
+            Observable.just(message).observeOn(mainThreadScheduler)
+                    .subscribe(new Action1<Message>() {
+                        @Override public void call(Message message) {
+                            wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
+                                    .onTargetNotification(Observable.just(message));
+                        }
+                    });
+        } else {
+            Observable.just(message).observeOn(mainThreadScheduler)
+                    .subscribe(new Action1<Message>() {
+                        @Override public void call(Message message) {
+                            wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
+                                    .onMismatchTargetNotification(Observable.just(message));
+                        }
+                    });
+        }
     }
 
     <T> Class<T> getClassByName(String className) {

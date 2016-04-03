@@ -11,7 +11,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import victoralbertos.io.rxgcm.data.api.GcmServerService;
-import victoralbertos.io.rxgcm.presentation.ActivityIssue;
+import victoralbertos.io.rxgcm.presentation.FragmentBase;
+import victoralbertos.io.rxgcm.presentation.HostActivityIssues;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -29,7 +30,7 @@ import static junit.framework.Assert.assertNotNull;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotificationsTest {
     private final static String TITLE = "A tittle", BODY = "A Body";
-    @Rule public ActivityTestRule<ActivityIssue> mActivityRule = new ActivityTestRule(ActivityIssue.class);
+    @Rule public ActivityTestRule<HostActivityIssues> mActivityRule = new ActivityTestRule(HostActivityIssues.class);
 
     @Test public void _1_Send_And_Receive_Notification_On_Foreground() {
         //Conservative delay to wait for token in case app is not previously installed
@@ -51,7 +52,7 @@ public class NotificationsTest {
 
         waitTime(3000);
 
-        onView(withId(R.id.tv_log)).check(matches(withText(ActivityIssue.message)));
+        onView(withId(R.id.tv_log)).check(matches(withText(FragmentBase.MISMATCH_TARGET_MESSAGE)));
         onView(withId(R.id.bt_go_to_other_screen)).perform(click());
 
         waitTime(1000);
