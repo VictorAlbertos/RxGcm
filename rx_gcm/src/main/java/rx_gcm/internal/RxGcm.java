@@ -211,6 +211,7 @@ public enum RxGcm {
         }
 
         final GetGcmReceiversUIForeground.Wrapper wrapperGcmReceiverUIForeground = getGcmReceiversUIForeground.retrieve(message.target(), activitiesLifecycle.getLiveActivityOrNull());
+        if (wrapperGcmReceiverUIForeground == null) return;
 
         if (wrapperGcmReceiverUIForeground.isTargetScreen()) {
             Observable.just(message).observeOn(mainThreadScheduler)
