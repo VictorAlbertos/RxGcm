@@ -215,7 +215,8 @@ Or you can send directly push notifications using [this page](http://1-dot-sigma
 * <https://github.com/VictorAlbertos>
 
 ## Another author's libraries using RxJava:
-* [RxCache](https://github.com/VictorAlbertos/RxCache): Reactive caching library for Android and Java. 
+* [RxCache](https://github.com/VictorAlbertos/RxCache): Reactive caching library for Android and Java.
+* [RxPaparazzo](https://github.com/FuckBoilerplate/RxPaparazzo): RxJava extension for Android to take images using camera and gallery.
 * [RxActivityResult](https://github.com/VictorAlbertos/RxActivityResult): A reactive-tiny-badass-vindictive library to break with the OnActivityResult implementation as it breaks the observables chain. 
 
 
