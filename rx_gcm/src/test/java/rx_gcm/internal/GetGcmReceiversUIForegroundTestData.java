@@ -54,7 +54,7 @@ public class GetGcmReceiversUIForegroundTestData {
 
     @Test public void When_Several_GcmReceiverUIForeground_Return_One_Which_Is_Target_Screen() {
         when(fragmentManagerMock.getFragments()).thenReturn(getFragmentsReceivers());
-        when(activityMockReceiver.target()).thenReturn(ActivityMockReceiver.SCREEN_NAME);
+        when(activityMockReceiver.matchesTarget(ActivityMockReceiver.SCREEN_NAME)).thenReturn(true);
         when(activityMockReceiver.getSupportFragmentManager()).thenReturn(fragmentManagerMock);
 
         String targetScreen = FragmentMock1Receiver.SCREEN_NAME;
@@ -78,7 +78,7 @@ public class GetGcmReceiversUIForegroundTestData {
 
     @Test public void When_Several_GcmReceiverUIForeground_Return_But_One_Is_Target_Screen_Return_Some_One() {
         when(fragmentManagerMock.getFragments()).thenReturn(getFragmentsReceivers());
-        when(activityMockReceiver.target()).thenReturn(ActivityMockReceiver.SCREEN_NAME);
+        when(activityMockReceiver.matchesTarget(ActivityMockReceiver.SCREEN_NAME)).thenReturn(true);
         when(activityMockReceiver.getSupportFragmentManager()).thenReturn(fragmentManagerMock);
 
         String targetScreen = "no one";
@@ -123,8 +123,8 @@ public class GetGcmReceiversUIForegroundTestData {
 
         @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {}
 
-        @Override public String target() {
-            return null;
+        @Override public boolean matchesTarget(String key) {
+            return false;
         }
     }
 
@@ -135,8 +135,8 @@ public class GetGcmReceiversUIForegroundTestData {
 
         @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {}
 
-        @Override public String target() {
-            return SCREEN_NAME;
+        @Override public boolean matchesTarget(String key) {
+            return key.equals(SCREEN_NAME);
         }
     }
 
@@ -147,8 +147,8 @@ public class GetGcmReceiversUIForegroundTestData {
 
         @Override public void onMismatchTargetNotification(Observable<Message> oMessage) {}
 
-        @Override public String target() {
-            return SCREEN_NAME;
+        @Override public boolean matchesTarget(String key) {
+            return key.equals(SCREEN_NAME);
         }
     }
 

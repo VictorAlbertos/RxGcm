@@ -15,7 +15,7 @@ public class FragmentIssue extends FragmentBase {
         });
     }
 
-    @Override public String target() {
-        return GcmServerService.TARGET_ISSUE_GCM;
+    @Override public boolean matchesTarget(String key) {
+        return GcmServerService.TARGET_ISSUE_GCM.equals(key);
     }
 }

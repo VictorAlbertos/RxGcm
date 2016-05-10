@@ -15,7 +15,7 @@ public class FragmentSupplies extends FragmentBase {
         });
     }
 
-    @Override public String target() {
-        return GcmServerService.TARGET_SUPPLY_GCM;
+    @Override public boolean matchesTarget(String key) {
+        return GcmServerService.TARGET_SUPPLY_GCM.equals(key);
     }
 }

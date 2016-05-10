@@ -134,19 +134,21 @@ public class RxGcmTest {
         TokenUpdate token1 = subscriberMock.getOnNextEvents().get(0);
         assertThat(token1.getToken(), is(MOCK_TOKEN));
 
+        subscriberMock = GcmRefreshTokenReceiverMock.initSubscriber();
         reset(getGcmServerTokenMock);
         String errorMessage = "GCM not available";
         when(getGcmServerTokenMock.retrieve(applicationMock)).thenThrow(new RuntimeException(errorMessage));        RxGcm.Notifications.onTokenRefreshed();
         subscriberMock.awaitTerminalEvent();
-        subscriberMock.assertValueCount(1);
+        subscriberMock.assertNoValues();
         assertThat(subscriberMock.getOnErrorEvents().get(0).getMessage(), is(errorMessage));
 
+        subscriberMock = GcmRefreshTokenReceiverMock.initSubscriber();
         reset(getGcmServerTokenMock);
         when(getGcmServerTokenMock.retrieve(applicationMock)).thenReturn(MOCK_TOKEN + 1);
         RxGcm.Notifications.onTokenRefreshed();
         subscriberMock.awaitTerminalEvent();
-        assertThat(subscriberMock.getOnErrorEvents().size(), is(1));
-        TokenUpdate token2 = subscriberMock.getOnNextEvents().get(1);
+        subscriberMock.assertNoErrors();
+        TokenUpdate token2 = subscriberMock.getOnNextEvents().get(0);
         assertThat(token2.getToken(), is(MOCK_TOKEN + 1));
 
         reset(getGcmServerTokenMock);

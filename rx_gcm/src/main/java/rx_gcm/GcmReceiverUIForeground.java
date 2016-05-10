@@ -37,7 +37,9 @@ public interface GcmReceiverUIForeground {
     void onMismatchTargetNotification(Observable<Message> oMessage);
 
     /**
-     * @return The value provided in the bundle notification by the server to be used as a filter when updating data model or seeking for the activity/fragment to be notified.
+     * Determines if the implementing class is interested on be notified when updating the data model or seeking for the activity/fragment to be notified.
+     * @param key The value provided in the bundle notification by the server
+     * @return true if the implementing class is interested on be notified
      */
-    String target();
+    boolean matchesTarget(String key);
 }

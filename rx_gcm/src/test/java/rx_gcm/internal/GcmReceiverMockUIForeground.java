@@ -44,8 +44,8 @@ public class GcmReceiverMockUIForeground implements GcmReceiverUIForeground {
         });
     }
 
-    @Override public String target() {
-        return "GcmReceiverMockUI";
+    @Override public boolean matchesTarget(String key) {
+        return key.equals("GcmReceiverMockUI");
     }
 
     public List<Message> getMessages() {

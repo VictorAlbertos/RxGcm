@@ -15,8 +15,8 @@ Add RxGcm dependency and Google Services plugin to project level build.gradle.
 apply plugin: 'com.google.gms.google-services'
 
 dependencies {
-    compile 'com.github.VictorAlbertos:RxGcm:0.2.2'
-    compile 'io.reactivex:rxjava:1.1.0'
+    compile 'com.github.VictorAlbertos:RxGcm:0.2.3'
+    compile 'io.reactivex:rxjava:1.1.5'
 }
 ```
 
@@ -24,7 +24,7 @@ Add Google Services to classpath and jitpack repository to root level build.grad
 
 ```gradle
 dependencies {
-    classpath 'com.google.gms:google-services:1.5.0'
+     classpath 'com.google.gms:google-services:2.1.0'
 }
 
 allprojects {
@@ -106,9 +106,9 @@ public class AppGcmReceiverUIBackground implements GcmReceiverUIBackground { �
 ```
 
 #### GcmReceiverUIForeground
-`GcmReceiverUIForeground` implementation will be called when a notification is received and the application is in the foreground. The implementation class must be an `Activity` or an `android.support.v4.app.Fragment`. `GcmReceiverUIForeground` exposes a method called `target()`, which forces to the implementation class to return a string. 
+`GcmReceiverUIForeground` implementation will be called when a notification is received and the application is in the foreground. The implementation class must be an `Activity` or an `android.support.v4.app.Fragment`. `GcmReceiverUIForeground` exposes a method called `matchesTarget()`, which receives an string (the value of the rx_gcm_key_target node payload notification) and forces to the implementation class to return a boolean. 
 
-RxGcm internally compares this string to the value of the rx_gcm_key_target node payload notification. If the current `Activity` or visible `Fragment` `target()` method value matches with the one of rx_gcm_key_target node, `onTargetNotification()` method will be called, otherwise `onMismatchTargetNotification()` method will be called. 
+If the current `Activity` or visible `Fragment` `matchesTarget()` method returns true, `onTargetNotification()` method will be called, otherwise `onMismatchTargetNotification()` method will be called. 
 
 ```java
 public abstract class BaseFragment extends android.support.v4.app.Fragment implements GcmReceiverUIForeground {      
@@ -130,10 +130,10 @@ public class FragmentIssues extends BaseFragment {  
             notificationAdapter.notifyDataSetChanged();
         });
     }   
-
-	@Override public String target() {         
-		return "issues";     
-	}    
+	 
+    @Override public boolean matchesTarget(String key) {
+        return "issues".equals(key);
+    }
 	  
 }
 ```
@@ -145,12 +145,11 @@ public class FragmentSupplies extends android.support.v4.app.Fragment implements
         oMessage.subscribe(message -> {
             notificationAdapter.notifyDataSetChanged();
         });
-    }    
-
-	@Override public String target() {         
-		return "supplies";     
-	}    
+    }     
 	  
+	@Override public boolean matchesTarget(String key) {
+        return "supplies".equals(key);
+    }
 }
 ```
 

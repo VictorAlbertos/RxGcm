@@ -36,7 +36,7 @@ class GetGcmReceiversUIForeground {
         if (activity instanceof GcmReceiverUIForeground) {
             GcmReceiverUIForeground gcmReceiverUIForeground = (GcmReceiverUIForeground) activity;
 
-            boolean targetScreen = gcmReceiverUIForeground.target().equals(screenName);
+            boolean targetScreen = gcmReceiverUIForeground.matchesTarget(screenName);
             receiverCandidate = new Wrapper(gcmReceiverUIForeground, targetScreen);
 
             if (targetScreen) return receiverCandidate;
@@ -54,9 +54,7 @@ class GetGcmReceiversUIForeground {
                 if(fragment != null && isVisible(fragment) && fragment instanceof GcmReceiverUIForeground) {
                     GcmReceiverUIForeground gcmReceiverUIForeground = (GcmReceiverUIForeground) fragment;
 
-                    String target = gcmReceiverUIForeground.target() != null ? gcmReceiverUIForeground.target() : "";
-
-                    boolean isTargetScreen = target.equals(screenName);
+                    boolean isTargetScreen = gcmReceiverUIForeground.matchesTarget(screenName);
                     receiverCandidate = new Wrapper(gcmReceiverUIForeground, isTargetScreen);
 
                     if (isTargetScreen) return receiverCandidate;
