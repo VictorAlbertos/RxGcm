@@ -18,15 +18,18 @@ package rx_gcm.internal;
 
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import rx_gcm.GcmReceiverUIForeground;
 
 class GetGcmReceiversUIForeground {
+    private List<Fragment> gcmReceiversUIForegroundNotTargetScreen;
 
     Wrapper retrieve(String screenName, Activity activity){
         Wrapper receiverCandidate = null;
@@ -47,22 +50,41 @@ class GetGcmReceiversUIForeground {
         FragmentActivity fragmentActivity = (FragmentActivity) activity;
         FragmentManager fragmentManager = fragmentActivity.getSupportFragmentManager();
 
-        List<Fragment> fragments = fragmentManager.getFragments();
+        gcmReceiversUIForegroundNotTargetScreen = new ArrayList<>();
+        Fragment fragment = getGcmReceiverUIForeground(fragmentManager.getFragments(), screenName);
+        gcmReceiversUIForegroundNotTargetScreen.clear();
 
-        if(fragments != null) {
-            for(Fragment fragment : fragments) {
-                if(fragment != null && isVisible(fragment) && fragment instanceof GcmReceiverUIForeground) {
-                    GcmReceiverUIForeground gcmReceiverUIForeground = (GcmReceiverUIForeground) fragment;
+        if (fragment != null) {
+            GcmReceiverUIForeground gcmReceiverUIForeground = (GcmReceiverUIForeground) fragment;
+            boolean isTargetScreen = gcmReceiverUIForeground.matchesTarget(screenName);
+            return new Wrapper(gcmReceiverUIForeground, isTargetScreen);
+        } else {
+            return receiverCandidate;
+        }
+    }
 
-                    boolean isTargetScreen = gcmReceiverUIForeground.matchesTarget(screenName);
-                    receiverCandidate = new Wrapper(gcmReceiverUIForeground, isTargetScreen);
+    @Nullable private Fragment getGcmReceiverUIForeground(List<Fragment> fragments, String screenName) {
+        if (fragments == null) return null;
 
-                    if (isTargetScreen) return receiverCandidate;
+        for (Fragment fragment : fragments) {
+            if (fragment != null && isVisible(fragment) && fragment instanceof GcmReceiverUIForeground) {
+                GcmReceiverUIForeground gcmReceiverUIForeground = (GcmReceiverUIForeground) fragment;
+                boolean isTargetScreen = gcmReceiverUIForeground.matchesTarget(screenName);
+
+                if (isTargetScreen) {
+                    return fragment;
+                } else {
+                    gcmReceiversUIForegroundNotTargetScreen.add(fragment);
+                    continue;
                 }
+            } else if (fragment != null && fragment.getChildFragmentManager() != null) {
+                List<Fragment> childFragments = fragment.getChildFragmentManager().getFragments();
+                return getGcmReceiverUIForeground(childFragments, screenName);
             }
         }
 
-        return receiverCandidate;
+        if (!gcmReceiversUIForegroundNotTargetScreen.isEmpty()) return gcmReceiversUIForegroundNotTargetScreen.get(0);
+        else return null;
     }
 
     static class Wrapper {

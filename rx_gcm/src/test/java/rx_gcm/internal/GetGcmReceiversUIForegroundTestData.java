@@ -76,7 +76,7 @@ public class GetGcmReceiversUIForegroundTestData {
         assertThat(wrapper.gcmReceiverUIForeground() instanceof ActivityMockReceiver, is(true));
     }
 
-    @Test public void When_Several_GcmReceiverUIForeground_Return_But_One_Is_Target_Screen_Return_Some_One() {
+    @Test public void When_Several_GcmReceiverUIForeground_But_No_One_Is_Target_Screen_Return_Some_One() {
         when(fragmentManagerMock.getFragments()).thenReturn(getFragmentsReceivers());
         when(activityMockReceiver.matchesTarget(ActivityMockReceiver.SCREEN_NAME)).thenReturn(true);
         when(activityMockReceiver.getSupportFragmentManager()).thenReturn(fragmentManagerMock);
@@ -84,7 +84,7 @@ public class GetGcmReceiversUIForegroundTestData {
         String targetScreen = "no one";
         GetGcmReceiversUIForeground.Wrapper wrapper = getGcmReceiversUIForegroundUT.retrieve(targetScreen, activityMockReceiver);
         assertThat(wrapper.isTargetScreen(), is(false));
-        assertThat(wrapper.gcmReceiverUIForeground() instanceof FragmentMock2Receiver, is(true));
+        assertThat(wrapper.gcmReceiverUIForeground() instanceof FragmentMock1Receiver, is(true));
 
         reset(fragmentManagerMock);
         when(fragmentManagerMock.getFragments()).thenReturn(new ArrayList<Fragment>());

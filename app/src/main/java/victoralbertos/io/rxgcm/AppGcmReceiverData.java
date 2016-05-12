@@ -23,6 +23,7 @@ public class AppGcmReceiverData implements GcmReceiverData {
 
             if (message.target().equals(GcmServerService.TARGET_ISSUE_GCM)) Cache.Pool.addIssue(new Notification(title, body));
             else if (message.target().equals(GcmServerService.TARGET_SUPPLY_GCM)) Cache.Pool.addSupply(new Notification(title, body));
+            else if (message.target().equals(GcmServerService.TARGET_NESTED_SUPPLY_GCM)) Cache.Pool.addNestedSupply(new Notification(title, body));
         });
     }
 }

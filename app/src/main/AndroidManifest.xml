@@ -10,9 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".presentation.HostActivityIssues"
-            android:label="Issues"
-            android:noHistory="true"
+            android:name=".presentation.StartActivity"
+            android:label="Start activity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -21,11 +20,21 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".presentation.HostActivityIssues"
+            android:label="Issues"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"/>
+        <activity
             android:name=".presentation.HostActivitySupplies"
             android:label="Supplies"
             android:noHistory="true"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".presentation.nested_fragment.HostActivityNestedFragment"
+            android:label="Nested supplies"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>

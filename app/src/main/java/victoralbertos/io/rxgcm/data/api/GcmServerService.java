@@ -13,6 +13,7 @@ public class GcmServerService {
     private final ApiGcmServer apiGcmServer;
     public final static String TARGET_ISSUE_GCM = "target_issue_gcm";
     public final static String TARGET_SUPPLY_GCM = "target_supply_gcm";
+    public final static String TARGET_NESTED_SUPPLY_GCM = "target_nested_supply_gcm";
     public final static String TITLE = "title", BODY = "body";
 
     public GcmServerService() {
@@ -34,6 +35,14 @@ public class GcmServerService {
     public Observable<Boolean> sendGcmNotificationRequestingSupply(String title, String body) {
         return RxGcm.Notifications.currentToken()
                 .map(token -> new Payload(token, title, body, TARGET_SUPPLY_GCM))
+                .concatMap(payload -> apiGcmServer.sendNotification(payload))
+                .map(gcmResponseServerResponse -> gcmResponseServerResponse.body().success())
+                .onErrorReturn(throwable -> false);
+    }
+
+    public Observable<Boolean> sendGcmNotificationRequestingNestedSupply(String title, String body) {
+        return RxGcm.Notifications.currentToken()
+                .map(token -> new Payload(token, title, body, TARGET_NESTED_SUPPLY_GCM))
                 .concatMap(payload -> apiGcmServer.sendNotification(payload))
                 .map(gcmResponseServerResponse -> gcmResponseServerResponse.body().success())
                 .onErrorReturn(throwable -> false);

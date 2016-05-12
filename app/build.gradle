@@ -65,3 +65,5 @@ dependencies {
         exclude module: 'recyclerview-v7'
     }
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -12,7 +12,7 @@ import org.junit.runners.MethodSorters;
 
 import victoralbertos.io.rxgcm.data.api.GcmServerService;
 import victoralbertos.io.rxgcm.presentation.FragmentBase;
-import victoralbertos.io.rxgcm.presentation.HostActivityIssues;
+import victoralbertos.io.rxgcm.presentation.StartActivity;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -30,11 +30,13 @@ import static junit.framework.Assert.assertNotNull;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NotificationsTest {
     private final static String TITLE = "A tittle", BODY = "A Body";
-    @Rule public ActivityTestRule<HostActivityIssues> mActivityRule = new ActivityTestRule(HostActivityIssues.class);
+    @Rule public ActivityTestRule<StartActivity> mActivityRule = new ActivityTestRule(StartActivity.class);
 
     @Test public void _1_Send_And_Receive_Notification_On_Foreground() {
         //Conservative delay to wait for token in case app is not previously installed
         waitTime(7000);
+
+        onView(withId(R.id.bt_no_nested_fragment)).perform(click());
 
         //Send issue
         onView(withId(R.id.et_title)).perform(click(), replaceText(TITLE), closeSoftKeyboard());
@@ -60,7 +62,20 @@ public class NotificationsTest {
         onView(withId(R.id.rv_notifications)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
     }
 
-    @Test public void _2_Send_And_Receive_Notification_On_Background() {
+    @Test public void _2_Send_And_Receive_Notification_On_Foreground_Nested_Fragment() {
+        onView(withId(R.id.bt_nested_fragment)).perform(click());
+
+        //Send nested supply
+        onView(withId(R.id.et_title)).perform(click(), replaceText(TITLE), closeSoftKeyboard());
+        onView(withId(R.id.et_body)).perform(click(), replaceText(BODY), closeSoftKeyboard());
+        onView(withId(R.id.bt_send_supply)).perform(click());
+
+        waitTime(3000);
+
+        onView(withId(R.id.rv_notifications)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+    }
+
+    @Test public void _3_Send_And_Receive_Notification_On_Background() {
         AppGcmReceiverUIBackground.initTestBackgroundMessage();
         mActivityRule.getActivity().finish();
 

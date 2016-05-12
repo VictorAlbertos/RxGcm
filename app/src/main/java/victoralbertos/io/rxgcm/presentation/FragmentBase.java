@@ -72,6 +72,18 @@ public abstract class FragmentBase extends Fragment implements GcmReceiverUIFore
         });
     }
 
+    protected void sendNestedSupplyClickListener() {
+        findViewById(R.id.bt_send_supply).setOnClickListener(view -> {
+            String title = ((EditText) findViewById(R.id.et_title)).getText().toString();
+            String body = ((EditText) findViewById(R.id.et_body)).getText().toString();
+
+            gcmServerService.sendGcmNotificationRequestingNestedSupply(title, body).subscribe(success -> {
+                if (success) Log.d("sendGcmNotification", "Message sent");
+                else Log.e("sendGcmNotification", "Message not sent");
+            });
+        });
+    }
+
     private void goToSuppliesClickListener() {
         Button button = (Button) findViewById(R.id.bt_go_to_other_screen);
         button.setText(this instanceof FragmentSupplies ? "Go to issues" : "Go to supplies");
@@ -87,7 +99,11 @@ public abstract class FragmentBase extends Fragment implements GcmReceiverUIFore
         rv_notifications.setHasFixedSize(true);
         rv_notifications.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        List<Notification> notifications = this instanceof FragmentSupplies ? Cache.Pool.getSupplies() : Cache.Pool.getIssues();
+        List<Notification> notifications;
+        if (this instanceof FragmentSupplies) notifications = Cache.Pool.getSupplies();
+        else if (this instanceof FragmentIssue) notifications = Cache.Pool.getIssues();
+        else notifications = Cache.Pool.getNestedSupplies();
+
         notificationAdapter = new NotificationAdapter(notifications);
         rv_notifications.setAdapter(notificationAdapter);
     }
@@ -108,7 +124,7 @@ public abstract class FragmentBase extends Fragment implements GcmReceiverUIFore
     }
 
 
-    private View findViewById(int id) {
+    protected View findViewById(int id) {
         return getView().findViewById(id);
     }
 }

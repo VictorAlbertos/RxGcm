@@ -13,14 +13,18 @@ public enum Cache {
 
     private final List<Notification> issues = new ArrayList<>();
     private final List<Notification> supplies = new ArrayList<>();
+    private final List<Notification> nestedSupplies = new ArrayList<>();
 
     public void addIssue(Notification issue) {
         issues.add(issue);
     }
 
-
     public void addSupply(Notification supply) {
         supplies.add(supply);
+    }
+
+    public void addNestedSupply(Notification supply) {
+        nestedSupplies.add(supply);
     }
 
     public List<Notification> getIssues() {
@@ -30,4 +34,9 @@ public enum Cache {
     public List<Notification> getSupplies() {
         return supplies;
     }
+
+    public List<Notification> getNestedSupplies() {
+        return nestedSupplies;
+    }
+
 }
