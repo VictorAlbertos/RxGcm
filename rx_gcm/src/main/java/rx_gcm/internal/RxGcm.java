@@ -185,7 +185,14 @@ public enum RxGcm {
                         }
                     }
                 })
-                .subscribe();
+                .subscribe(new Action1<Message>() {
+                    @Override public void call(Message message) {}
+                }, new Action1<Throwable>() {
+                    @Override public void call(Throwable throwable) {
+                        String message = "Error thrown from GcmReceiverData subscription. Cause exception: " + throwable.getMessage();
+                        Log.e("RxGcm", message);
+                    }
+                });
     }
 
     private void notifyGcmReceiverBackgroundMessage(Message message) {
