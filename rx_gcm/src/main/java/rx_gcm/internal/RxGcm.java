@@ -27,6 +27,7 @@ import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Actions;
 import rx.schedulers.Schedulers;
 import rx_gcm.GcmReceiverData;
 import rx_gcm.GcmReceiverUIBackground;
@@ -185,9 +186,7 @@ public enum RxGcm {
                         }
                     }
                 })
-                .subscribe(new Action1<Message>() {
-                    @Override public void call(Message message) {}
-                }, new Action1<Throwable>() {
+                .subscribe(Actions.empty(), new Action1<Throwable>() {
                     @Override public void call(Throwable throwable) {
                         String message = "Error thrown from GcmReceiverData subscription. Cause exception: " + throwable.getMessage();
                         Log.e("RxGcm", message);
