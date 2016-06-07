@@ -198,7 +198,7 @@ public class RxSampleApp extends Application {
 RxGgm asks to Google for a token. But if the token is already cached, the observable will complete without emitting the item. 
 
 ### Threading
-`RxGcm.register` method uses internally [RxAndroid](https://github.com/ReactiveX/RxAndroid). Thanks to this, the observable provided observes on the Main Thread and subscribes on an IO thread. 
+`RxGcm.Notifications.register` method uses internally [RxAndroid](https://github.com/ReactiveX/RxAndroid). Thanks to this, the observable provided observes on the Main Thread and subscribes on an IO thread. 
 This means you do not need to worry about threading and sync. But if you  need to change this behaviour, you can do it easily setting in which scheduler the observable needs to observe and subscribe.
 
 ## Examples
