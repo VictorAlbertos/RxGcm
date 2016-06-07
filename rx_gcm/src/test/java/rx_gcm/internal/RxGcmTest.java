@@ -111,18 +111,6 @@ public class RxGcmTest {
         subscriberMock.assertNoErrors();
     }
 
-    @Test public void When_Call_Current_Token_And_There_Is_No_Token_Emit_Error_But_Try_3_Times() {
-        when(persistenceMock.getToken(applicationMock)).thenReturn(null);
-
-        TestSubscriber<String> subscriberMock = new TestSubscriber<>();
-        RxGcm.Notifications.currentToken().subscribe(subscriberMock);
-        subscriberMock.awaitTerminalEvent();
-
-        subscriberMock.assertError(RuntimeException.class);
-        subscriberMock.assertValueCount(0);
-        verify(persistenceMock, times(3)).getToken(applicationMock);
-    }
-
     @Test public void When_Call_On_Token_Refresh_Emit_Properly_Item() throws Exception {
         TestSubscriber<TokenUpdate> subscriberMock = GcmRefreshTokenReceiverMock.initSubscriber();
         when(persistenceMock.getClassNameGcmRefreshTokenReceiver(applicationMock)).thenReturn(GcmRefreshTokenReceiverMock.class.getName());

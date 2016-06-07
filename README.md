@@ -15,7 +15,7 @@ Add RxGcm dependency and Google Services plugin to project level build.gradle.
 apply plugin: 'com.google.gms.google-services'
 
 dependencies {
-    compile 'com.github.VictorAlbertos:RxGcm:0.2.8'
+    compile 'com.github.VictorAlbertos:RxGcm:0.2.9'
     compile 'io.reactivex:rxjava:1.1.5'
 }
 ```
@@ -198,7 +198,7 @@ public class RxSampleApp extends Application {
 RxGgm asks to Google for a token. But if the token is already cached, the observable will complete without emitting the item. 
 
 ### Threading
-RxGcm uses internally [RxAndroid](https://github.com/ReactiveX/RxAndroid). Thanks to this, each observable created by RxGcm observes on the Main Thread and subscribe on an IO thread. 
+`RxGcm.register` method uses internally [RxAndroid](https://github.com/ReactiveX/RxAndroid). Thanks to this, the observable provided observes on the Main Thread and subscribes on an IO thread. 
 This means you do not need to worry about threading and sync. But if you  need to change this behaviour, you can do it easily setting in which scheduler the observable needs to observe and subscribe.
 
 ## Examples

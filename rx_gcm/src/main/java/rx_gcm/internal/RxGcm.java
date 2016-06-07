@@ -123,9 +123,7 @@ public enum RxGcm {
                 }
                 subscriber.onCompleted();
             }
-        }).subscribeOn(Schedulers.io())
-                .observeOn(mainThreadScheduler)
-                .retryWhen(new RetryWithDelay(3, 2000));
+        });
     }
 
     /**
