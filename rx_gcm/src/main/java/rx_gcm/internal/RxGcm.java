@@ -196,14 +196,9 @@ public enum RxGcm {
         String className = persistence.getClassNameGcmReceiverUIBackground(activitiesLifecycle.getApplication());
         final GcmReceiverUIBackground gcmReceiverUIBackground = getInstanceClassByName(className);
 
-        Observable.just(message).observeOn(mainThreadScheduler)
-                .subscribe(new Action1<Message>() {
-                    @Override
-                    public void call(Message message) {
-                        Observable<Message> oNotification = Observable.just(message);
-                        gcmReceiverUIBackground.onNotification(oNotification);
-                    }
-                });
+        Observable<Message> oNotification = Observable.just(message)
+            .observeOn(mainThreadScheduler);
+        gcmReceiverUIBackground.onNotification(oNotification);
     }
 
     private void notifyGcmReceiverForegroundMessage(Message message) {
@@ -217,22 +212,15 @@ public enum RxGcm {
         final GetGcmReceiversUIForeground.Wrapper wrapperGcmReceiverUIForeground = getGcmReceiversUIForeground.retrieve(message.target(), activitiesLifecycle.getLiveActivityOrNull());
         if (wrapperGcmReceiverUIForeground == null) return;
 
+        Observable<Message> oNotification = Observable.just(message)
+            .observeOn(mainThreadScheduler);
+
         if (wrapperGcmReceiverUIForeground.isTargetScreen()) {
-            Observable.just(message).observeOn(mainThreadScheduler)
-                    .subscribe(new Action1<Message>() {
-                        @Override public void call(Message message) {
-                            wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
-                                    .onTargetNotification(Observable.just(message));
-                        }
-                    });
+            wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
+                .onTargetNotification(oNotification);
         } else {
-            Observable.just(message).observeOn(mainThreadScheduler)
-                    .subscribe(new Action1<Message>() {
-                        @Override public void call(Message message) {
-                            wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
-                                    .onMismatchTargetNotification(Observable.just(message));
-                        }
-                    });
+            wrapperGcmReceiverUIForeground.gcmReceiverUIForeground()
+                .onMismatchTargetNotification(oNotification);
         }
     }
 

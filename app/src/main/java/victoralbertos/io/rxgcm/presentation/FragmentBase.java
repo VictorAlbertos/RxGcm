@@ -117,6 +117,7 @@ public abstract class FragmentBase extends Fragment implements GcmReceiverUIFore
         TextView tv_log = (TextView) findViewById(R.id.tv_log);
 
         Observable.just("")
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext(empty -> tv_log.setText(MISMATCH_TARGET_MESSAGE))
                 .delay(5, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
