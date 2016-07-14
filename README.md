@@ -1,6 +1,6 @@
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-RxGcm-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/3126)
 
-## [DEPRECATED] Use [RxFcm](https://github.com/VictorAlbertos/RxFcm) instead. Their APIs are almost identical so there shoul not be any problem to migrate from RxGcm to RxFcm. 
+## [DEPRECATED] Use [RxFcm](https://github.com/VictorAlbertos/RxFcm) instead. Their APIs are almost identical so there should not be any problem to migrate from RxGcm to RxFcm. 
 
 # RxGcm
 RxJava extension for Gcm which acts as an architectural approach to easily satisfy the requirements of an android app when dealing with push notifications.
